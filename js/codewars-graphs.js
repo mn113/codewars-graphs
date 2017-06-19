@@ -23,21 +23,23 @@ function getKata(kataid) {
 }
 
 function generateCalendar(target) {
-	// Find next Saturday
 	var now = moment();
-	var currentDay = now.clone();
-	currentDay.endOf("week").subtract(1, "days");
-	// Subtract 52x7
+	// Find next Sunday:
+	var finalDay = now.clone();
+	finalDay.endOf("week").add(1, "days");
+	// Subtract 52x7:
+	var currentDay = finalDay.clone();
 	currentDay.subtract(52, "weeks");
-	// Start looping
-	var html = "";
-	while (currentDay.isBefore(now)) {
-		console.log(currentDay.format("dddd, MMMM Do YYYY"));
+	// Prep HTML:
+	var headings = document.getElementById("calendar").innerHTML;
+	var html = headings;
+	// Start looping:
+	while (currentDay.isBefore(finalDay)) {
 		if (currentDay.weekday() === 0) html += "<section class='week'>";
-		html += "<div data-date="+currentDay.format("dddd, MMMM Do YYYY")+"></div>";
+		html += "<div data-date="+currentDay.format("YYYY-MM-DD")+">"+currentDay.format('d')+"</div>";
 		if (currentDay.weekday() === 6) html += "</section>";
 		currentDay.add(1, "days");
 	}
-	target.html(html);
+	document.getElementById(target).innerHTML = html;
 }
-generateCalendar();
+generateCalendar("calendar");

@@ -1,6 +1,6 @@
 #calendar {
 	display: grid;
-	grid-template-columns: repeat(52, 0.75em);
+	grid-template-columns: 2em repeat(52, 0.75em);
 	grid-gap: 2px;
 	border: 1px dotted #999;
 	padding: 2px;
@@ -14,4 +14,6 @@ section.week {
 
 .week > div {
 	background: #eee;
+	color: #333;
+	font-size: 0.6em;
 }
