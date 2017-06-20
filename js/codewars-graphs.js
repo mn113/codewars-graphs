@@ -22,18 +22,19 @@ function getCompletedKatas(username) {
 }
 
 function styleDay(date, dateKatas) {
-	console.log(dateKatas);
+	// Element to style:
 	var $div = $(".day[data-date="+date+"]");
-	// Count katas
+	// Style based on quantity:
 	$div.css({
-		opacity: dateKatas.length * 0.1
+		opacity: dateKatas.length * 0.2
 	});
-	// Group by language
+	// Group by language:
 	var langs = dateKatas.map(kata => kata.completedLanguages[0]);
 	var counts = _.countBy(langs);
 	console.log(counts);
-	var max = _.sortBy(counts)[0];
-	$div.addClass(max);
+	var topLang = _.maxBy(Object.keys(counts), value => counts[value]);
+	// Style based on top language:
+	$div.addClass(topLang);
 	// later: mixed bgcolors
 }
 

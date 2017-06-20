@@ -15,7 +15,7 @@ section.week {
 
 .week > div {
 	background: #000;
-	opacity: 0.1;
+	opacity: 0.05;
 	color: #333;
 	font-size: 0.6em;
 }
@@ -25,3 +25,9 @@ section.week {
 	opacity: 1;
 	text-align: right;
 }
+
+.day.php   { background: mediumpurple; }
+.day.ruby  { background: firebrick; }
+.day.javascript { background: mediumblue; }
+.day.python { background: limegreen; }
+.day.sql   { background: purple; }
