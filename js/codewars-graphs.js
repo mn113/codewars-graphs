@@ -37,13 +37,13 @@ var user = {
 //var secrets = axios.get("js/secret.json").then(resp => resp.data);
 
 function getCompletedKatas(username) {
-//	var url = baseUrl + "users/" + username + "/code-challenges/completed";
-
+	//var url = baseUrl + "users/" + username + "/code-challenges/completed";
 	axios.get("js/mn113completed.json")
 		.then(function(resp) {
 			user.completedKatas = resp.data.data;
 			user.languageCounts = _.countBy(resp.data.data, kata => kata.completedLanguages[0]);
 			renderKatas(user.completedKatas);
+			makeLegend();
 		});
 }
 
@@ -96,6 +96,20 @@ function makeTooltipContent(kataids) {
 	return $ul;
 }
 
+function makeLegend() {
+	for (var lang of Object.keys(user.languageCounts)) {
+		var count = user.languageCounts[lang];
+		var $li = $("<li>")
+			.html(lang +" ("+ count +" katas)");
+		var $icon = $("<i>")
+			.addClass(lang)
+			.addClass("icon-moon-"+lang);
+		$icon.prependTo($li);
+		$li.appendTo($(".legend"));
+	}
+	$(".legend").show();	
+}
+
 
 $(document).ready(function() {
 
@@ -104,15 +118,14 @@ $(document).ready(function() {
 	getCompletedKatas();
 
 	Tipped.create('.day', function() {
-		console.log(this);
 		if (!$(this).hasClass('tt')) return '';
-		return {
+		else return {
 			title: moment($(this).data("date")).format("dddd, Do MMMM"),
 			content: makeTooltipContent($(this).data("kataids").split(','))
 		};
 	}, {
-		position: 'top',
-		skin: 'light'
+		position: 'top',	// ignored!
+		skin: 'light'		// ignored!
 	}
 	);
 });
