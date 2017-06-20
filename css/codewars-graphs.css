@@ -33,16 +33,22 @@ section.week {
 .Nov:before { content: 'Nov'; }
 .Dec:before { content: 'Dec'; }
 
-.week > div {
+.day {
 	background: #000;
 	opacity: 0.05;
 	color: #333;
 	font-size: 0.6em;
 }
+.today {
+	background: #eee;
+	opacity: 1;
+	border: 1px dashed #999;
+}
 #day-headings > div {
 	background: none;
 	opacity: 1;
 	text-align: right;
+	font-size: 0.6em;
 }
 
 .day.php   { background: mediumpurple; }

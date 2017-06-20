@@ -1,5 +1,30 @@
 /* global axios, $, moment, _, Opentip, Tipped, Tooltip */
 
+function generateCalendar(target) {
+	var today = moment().endOf("day");
+	// Find next Sunday:
+	var finalDay = today.clone();
+	finalDay.endOf("week").add(1, "days");
+	// Subtract 52x7:
+	var currentDay = finalDay.clone();
+	currentDay.subtract(52, "weeks");
+	// Create week section:
+	var $week = $("<section>").addClass("week");
+	// Start looping chronologically:
+	while (currentDay.isBefore(finalDay)) {
+		if (currentDay.date() === 1) $week.addClass(currentDay.format('MMM'));
+		if (currentDay.weekday() === 0) $week = $("<section>").addClass("week");
+		// Create day div:
+		var $div = $("<div>").addClass("day").attr("data-date", currentDay.format("YYYY-MM-DD"));
+		// TODO: Load tooltip here?
+		// Mark today with x:
+		if (currentDay.isSame(today)) $div.addClass('today');
+		$div.appendTo($week);
+		if (currentDay.weekday() === 6) $week.appendTo($(target));
+		currentDay.add(1, "days");
+	}
+}
+
 //var baseUrl = "https://www.codewars.com/api/v1/";
 var moi = "mn113";		// later need to scrape this from page
 
@@ -11,14 +36,17 @@ function getCompletedKatas(username) {
 
 	axios.get("js/mn113completed.json")
 		.then(function(resp) {
-			var completedKatas = resp.data.data;
-			// Group by date:
-			var activeDates = _.countBy(completedKatas, kata => kata.completedAt.substr(0,10));
-			// Apply data to calendar day-by-day:
-			for (var date of Object.keys(activeDates)) {
-				styleDay(date, completedKatas.filter(kata => kata.completedAt.substr(0,10) === date));
-			}
+			renderKatas(resp.data.data);
 		});
+}
+
+function renderKatas(katas) {
+	// Group by date:
+	var activeDates = _.countBy(katas, kata => kata.completedAt.substr(0,10));
+	// Apply data to calendar day-by-day:
+	for (var date of Object.keys(activeDates)) {
+		styleDay(date, katas.filter(kata => kata.completedAt.substr(0,10) === date));
+	}
 }
 
 function styleDay(date, dateKatas) {
@@ -48,35 +76,6 @@ function getKata(kataid) {
 
 }
 */
-
-function generateCalendar(target) {
-	var now = moment();
-	// Find next Sunday:
-	var finalDay = now.clone();
-	finalDay.endOf("week").add(1, "days");
-	// Subtract 52x7:
-	var currentDay = finalDay.clone();
-	currentDay.subtract(52, "weeks");
-	// Prep HTML:
-	//var headings = document.getElementById("calendar").innerHTML;
-	//var html = headings;
-	var $week = $("<section>").addClass("week");
-	// Start looping:
-	while (currentDay.isBefore(finalDay)) {
-		if (currentDay.date() === 1) $week.addClass(currentDay.format('MMM'));
-		if (currentDay.weekday() === 0)
-			$week = $("<section>").addClass("week");
-			//html += "<section class='week'>";
-		var $div = $("<div>").addClass("day").attr("data-date", currentDay.format("YYYY-MM-DD"));
-		$div.appendTo($week);
-		//html += "<div class='day' data-date="+currentDay.format("YYYY-MM-DD")+"></div>";
-		if (currentDay.weekday() === 6)
-			$week.appendTo($(target));
-			//html += "</section>";
-		currentDay.add(1, "days");
-	}
-	//document.getElementById(target).innerHTML = html;
-}
 
 
 $(document).ready(function() {
