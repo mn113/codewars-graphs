@@ -2,16 +2,17 @@ body {
 	font-family: Arial, sans-serif;
 	font-size: 100%;
 	line-height: 120%;
+	color: #222;
 	padding: 0.5em 2em;
 }
 
 #calendar {
 	position: relative;
 	display: grid;
-	grid-template-columns: 1.5em repeat(52, 0.75em);
+	grid-template-columns: repeat(52, 0.75em); /* 1.5em */
 	grid-gap: 2px;
 	border: 1px dotted #999;
-	padding: 1em 2px 2px;
+	padding: 1em 2px 2px 1.5em;
 	width: calc(1.5em + 52*0.75em + 104px);
 }
 
@@ -22,11 +23,10 @@ section.week {
 }
 
 .week:before {
-	content: '';
 	font-size: 0.6em;
-	line-height: 0.6em;
+	line-height: 0.8em;
 	position: absolute;
-	top: 2px;
+	top: 0.3em;
 }
 .Jan:before { content: 'Jan'; }
 .Feb:before { content: 'Feb'; }
@@ -41,26 +41,36 @@ section.week {
 .Nov:before { content: 'Nov'; }
 .Dec:before { content: 'Dec'; }
 
+.week:first-of-type > div:before {
+	font-size: 0.6em;
+	line-height: 1.2em;
+	text-align: right;
+	position: absolute;
+	left: 0;
+}
+.week:first-of-type > div:nth-child(1):before { content: 'Sun'; }
+.week:first-of-type > div:nth-child(2):before { content: 'Mon'; }
+.week:first-of-type > div:nth-child(3):before { content: 'Tue'; }
+.week:first-of-type > div:nth-child(4):before { content: 'Wed'; }
+.week:first-of-type > div:nth-child(5):before { content: 'Thu'; }
+.week:first-of-type > div:nth-child(6):before { content: 'Fri'; }
+.week:first-of-type > div:nth-child(7):before { content: 'Sat'; }
+
+
 .day {
-	background: #000;
-	opacity: 0.05;
-	color: #333;
+	background: #eee;
 	font-size: 0.6em;
 	line-height: 0.6em;
 }
 .today {
-	background: #eee;
-	opacity: 1;
 	border: 1px dashed #999;
 }
 #day-headings > div {
 	background: none;
-	opacity: 1;
 	text-align: right;
 	font-size: 0.6em;
-	line-height: 0.6em;
+	line-height: 1.2em;
 }
-
 .day.php   { background: mediumpurple; }
 .day.sql   { background: purple; }
 .day.ruby  { background: firebrick; }
@@ -85,7 +95,7 @@ ul.legend li i {
 }
 
 ul.legend {
-	border: 1px dotted #666;
+	border: 1px dotted #999;
 	padding: 1em;
 	position: absolute;
 	top: 0;

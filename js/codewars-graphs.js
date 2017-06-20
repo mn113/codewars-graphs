@@ -107,7 +107,7 @@ function makeLegend() {
 		$icon.prependTo($li);
 		$li.appendTo($(".legend"));
 	}
-	$(".legend").show();	
+	$(".legend").show();
 }
 
 
@@ -128,4 +128,6 @@ $(document).ready(function() {
 		skin: 'light'		// ignored!
 	}
 	);
+
+	var ctx = $('canvas').getContext('2d');
 });
