@@ -61,19 +61,20 @@ section.week {
 .day.sql   { background: purple; }
 .day.ruby  { background: firebrick; }
 .day.python { background: limegreen; }
-.day.javascript { background: mediumblue; }
+.day.javascript { background: dodgerblue; }
 
 .php:before { color: mediumpurple; }
 .sql:before { color: purple; }
 .ruby:before { color: firebrick; }
 .python:before { color: limegreen; }
-.javascript:before { color: mediumblue; }
+.javascript:before { color: dodgerblue; }
 
 ul {
 	list-style: none;
 	padding: 0;
+	margin: 0;
 }
 
-li {
+ul.tt-katas li a {
 	padding-left: 0.5em;
 }

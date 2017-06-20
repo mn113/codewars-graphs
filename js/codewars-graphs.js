@@ -77,15 +77,20 @@ function styleDay(date, dateKatas) {
 }
 
 function makeTooltipContent(kataids) {
-	var $ul = $("<ul>");
+	var $ul = $("<ul>").addClass("tt-katas");
 	for (var id of kataids) {
 		// Lookup id in big kata list:
 		var kata = _.find(user.completedKatas, (kata) => kata.id === id);
-		var $li = $("<li>").addClass(kata.completedLanguages[0]);
-		var $icon = $("<i>").addClass(kata.completedLanguages[0]+" icon-moon-"+kata.completedLanguages[0]);
-		var $span = $("<span>").html(kata.name);
+		var $li = $("<li>");
+		var $icon = $("<i>")
+			.addClass(kata.completedLanguages[0])
+			.addClass("icon-moon-"+kata.completedLanguages[0]);
+		var $anchor = $("<a>")
+			.attr("href", "https://www.codewars.com/kata/"+kata.slug)
+			.attr("target", "_blank")
+			.html(kata.name);
 		$icon.appendTo($li);
-		$span.appendTo($li);
+		$anchor.appendTo($li);
 		$li.appendTo($ul);
 	}
 	return $ul;
