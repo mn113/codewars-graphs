@@ -63,6 +63,7 @@ function generateCalendar(target) {
 	var $week = $("<section>").addClass("week");
 	// Start looping:
 	while (currentDay.isBefore(finalDay)) {
+		if (currentDay.date() === 1) $week.addClass(currentDay.format('MMM'));
 		if (currentDay.weekday() === 0)
 			$week = $("<section>").addClass("week");
 			//html += "<section class='week'>";
