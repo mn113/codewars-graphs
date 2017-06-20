@@ -16,7 +16,6 @@ function generateCalendar(target) {
 		if (currentDay.weekday() === 0) $week = $("<section>").addClass("week");
 		// Create day div:
 		var $div = $("<div>").addClass("day").attr("data-date", currentDay.format("YYYY-MM-DD"));
-		// TODO: Load tooltip here?
 		// Mark today with x:
 		if (currentDay.isSame(today)) $div.addClass('today');
 		$div.appendTo($week);
@@ -25,8 +24,14 @@ function generateCalendar(target) {
 	}
 }
 
-//var baseUrl = "https://www.codewars.com/api/v1/";
-var moi = "mn113";		// later need to scrape this from page
+var baseUrl = "https://www.codewars.com/api/v1/";
+
+var user = {
+	username: "mn113",		// later need to scrape this from page
+	completedKatas: [],
+	authoredKatas: [],
+	languageCounts: {}
+};
 
 // Obtain Codewars API key (locally):
 //var secrets = axios.get("js/secret.json").then(resp => resp.data);
@@ -36,7 +41,9 @@ function getCompletedKatas(username) {
 
 	axios.get("js/mn113completed.json")
 		.then(function(resp) {
-			renderKatas(resp.data.data);
+			user.completedKatas = resp.data.data;
+			user.languageCounts = _.countBy(resp.data.data, kata => kata.completedLanguages[0]);
+			renderKatas(user.completedKatas);
 		});
 }
 
@@ -56,26 +63,33 @@ function styleDay(date, dateKatas) {
 	$div.css({
 		opacity: dateKatas.length * 0.2
 	});
+	// Extract ids, stringify & store as data-kataids:
+	var kataids = dateKatas.map(kata => kata.id);
+	$div.data("kataids", kataids.join(","));
 	// Group by language:
 	var langs = dateKatas.map(kata => kata.completedLanguages[0]);
 	var counts = _.countBy(langs);
 	console.log(counts);
 	var topLang = _.maxBy(Object.keys(counts), value => counts[value]);
 	// Style based on top language:
-	$div.addClass(topLang);
+	$div.addClass(topLang).addClass('tt');
 	// later: mixed bgcolors
 }
 
-
-/*
-function getAuthored(username) {
-
+function makeTooltipContent(kataids) {
+	var $ul = $("<ul>");
+	for (var id of kataids) {
+		// Lookup id in big kata list:
+		var kata = _.find(user.completedKatas, (kata) => kata.id === id);
+		var $li = $("<li>").addClass(kata.completedLanguages[0]);
+		var $icon = $("<i>").addClass(kata.completedLanguages[0]+" icon-moon-"+kata.completedLanguages[0]);
+		var $span = $("<span>").html(kata.name);
+		$icon.appendTo($li);
+		$span.appendTo($li);
+		$li.appendTo($ul);
+	}
+	return $ul;
 }
-
-function getKata(kataid) {
-
-}
-*/
 
 
 $(document).ready(function() {
@@ -84,26 +98,16 @@ $(document).ready(function() {
 
 	getCompletedKatas();
 
-	Tipped.create('.day',
-		function(element) {
-			console.log(element);
-			return "D" + $(element).data("date");	// undefined
-		}, {
-			skin: 'light',
-			position: 'top'
-		}
-	);
-
-/*	Tipped.create('#calendar div', {
+	Tipped.create('.day', function() {
+		console.log(this);
+		if (!$(this).hasClass('tt')) return '';
+		return {
+			title: moment($(this).data("date")).format("dddd, Do MMMM"),
+			content: makeTooltipContent($(this).data("kataids").split(','))
+		};
+	}, {
 		position: 'top',
-		content: 'x',
-		onShow: function(content, element) {
-			$(element).addClass('highlight');
-		},
-		afterHide: function(content, element) {
-			$(element).removeClass('highlight');
-		}
-	});
-*/
-
+		skin: 'light'
+	}
+	);
 });

@@ -1,3 +1,9 @@
+body {
+	font-family: Arial, sans-serif;
+	font-size: 100%;
+	padding: 0.5em 2em;
+}
+
 #calendar {
 	position: relative;
 	display: grid;
@@ -52,7 +58,22 @@ section.week {
 }
 
 .day.php   { background: mediumpurple; }
-.day.ruby  { background: firebrick; }
-.day.javascript { background: mediumblue; }
-.day.python { background: limegreen; }
 .day.sql   { background: purple; }
+.day.ruby  { background: firebrick; }
+.day.python { background: limegreen; }
+.day.javascript { background: mediumblue; }
+
+.php:before { color: mediumpurple; }
+.sql:before { color: purple; }
+.ruby:before { color: firebrick; }
+.python:before { color: limegreen; }
+.javascript:before { color: mediumblue; }
+
+ul {
+	list-style: none;
+	padding: 0;
+}
+
+li {
+	padding-left: 0.5em;
+}
