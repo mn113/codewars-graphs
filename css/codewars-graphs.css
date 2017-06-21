@@ -11,6 +11,10 @@ h1 {
 	line-height: 36px;
 }
 
+
+/************/
+/* CALENDAR */
+/************/
 #calendar {
 	position: relative;
 	display: grid;
@@ -27,6 +31,10 @@ section.week {
 	grid-gap: 2px;
 }
 
+
+/********************/
+/* HEADINGS - MONTH */
+/********************/
 .week:before {
 	font-size: 0.6em;
 	line-height: 0.8em;
@@ -46,6 +54,10 @@ section.week {
 .Nov:before { content: 'Nov'; }
 .Dec:before { content: 'Dec'; }
 
+
+/**********************/
+/* HEADINGS - WEEKDAY */
+/**********************/
 .week:first-of-type > div:before {
 	font-size: 0.6em;
 	line-height: 1.2em;
@@ -62,6 +74,9 @@ section.week {
 .week:first-of-type > div:nth-child(7):before { content: 'Sat'; }
 
 
+/********/
+/* DAYS */
+/********/
 .day {
 	background: #eee;
 	font-size: 0.6em;
@@ -71,30 +86,31 @@ section.week {
 	border: 1px dashed #999;
 	font-size: 1.2em;
 }
-#day-headings > div {
-	background: none;
-	text-align: right;
-	font-size: 0.6em;
-	line-height: 1.2em;
-}
 .day.php   { background: mediumpurple; }
 .day.sql   { background: purple; }
 .day.ruby  { background: firebrick; }
 .day.python { background: limegreen; }
 .day.javascript { background: dodgerblue; }
 
+
+/*********/
+/* ICONS */
+/*********/
 .php:before { color: mediumpurple; }
 .sql:before { color: purple; }
 .ruby:before { color: firebrick; }
 .python:before { color: limegreen; }
 .javascript:before { color: dodgerblue; }
 
+
+/**********/
+/* LEGEND */
+/**********/
 ul {
 	list-style: none;
 	padding: 0;
 	margin: 0;
 }
-
 ul.tt-katas li i,
 ul.legend li i {
 	margin-right: 0.5em;
@@ -113,6 +129,10 @@ ul.legend {
 	margin: 0.3em 0;
 }
 
+
+/************/
+/* FILTERER */
+/************/
 ul#language-filter {
 	display: flex;
 	margin-bottom: 1em;
@@ -123,11 +143,11 @@ ul#language-filter {
 	cursor: pointer;
 }
 #language-filter li:last-child {
-	border-none;
-}
-.selected {
-	font-weight: bold;
+	border: none;
 }
 #language-filter li:hover {
 	text-decoration: underline;
+}
+.selected {
+	font-weight: bold;
 }

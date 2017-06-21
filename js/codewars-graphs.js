@@ -57,6 +57,10 @@ function getCompletedKatas(username) {
 function renderKatas(katas, filter = "") {
 	if (filter.length > 0) {
 		katas = katas.filter(kata => kata.completedLanguages.indexOf(filter) !== -1);
+		$("canvas").hide();
+	}
+	else {
+		$("canvas").show();
 	}
 	// Group by date:
 	var activeDates = _.countBy(katas, kata => kata.completedAt.substr(0,10));
@@ -83,7 +87,59 @@ function styleDay(date, dateKatas) {
 	var topLang = _.maxBy(Object.keys(counts), value => counts[value]);
 	// Style based on top language:
 	$div.addClass(topLang).addClass('tt');
-	// later: mixed bgcolors
+	// Insert a small pie chart canvas:
+	$div.append(createCanvas(date));
+	drawPieOnCanvas(counts, date);
+}
+
+function createCanvas(id) {
+	var $canvas = $("<canvas>")
+		.attr("id", "canvas"+id)
+		.attr("width", 12)
+		.attr("height", 12);
+	return $canvas;
+}
+
+function drawPieOnCanvas(data, date) {
+	// Sum the values to find out 100% of this pie chart:
+	var dataSum = Object.values(data).reduce(function(acc, val) {
+		return acc + val;
+	}, 0);
+	//console.log("Total", dataSum, "katas");
+
+	var colours = {		// TODO: make global?
+		php: "mediumpurple",
+		ruby: "firebrick",
+		javascript: "dodgerblue",
+		python: "limegreen",
+		sql: "purple"
+	};
+
+	// Select a tiny canvas:
+	var canvas = document.querySelector('#canvas'+date);
+	var ctx = canvas.getContext('2d'),
+		canvasCenterVert = canvas.height / 2,
+		canvasCenterHoriz = canvas.width / 2;
+
+	// Make the pie fill the square canvas:
+	var radius = canvas.height;
+	// Start drawing at 9 o'clock:
+	var angle = -Math.PI;
+	// Draw a pie segment (filled arc) for each language count:
+	for (var key of Object.keys(data)) {
+		var arc = 2 * Math.PI * data[key] / dataSum;
+		//console.log("Arc", key, "from", angle, "to", angle+arc);
+		drawPieSlice(canvasCenterHoriz, canvasCenterVert, radius, angle, angle+arc, false, colours[key]);
+		angle += arc;
+	}
+
+	function drawPieSlice(x, y, radius, startAngle, endAngle, direction, fillStyle){
+		ctx.beginPath();
+		ctx.fillStyle = fillStyle;
+		ctx.moveTo(canvasCenterHoriz, canvasCenterVert);
+		ctx.arc(x, y, radius, startAngle, endAngle, direction);
+		ctx.fill();
+	}
 }
 
 function makeTooltipContent(kataids) {
@@ -149,4 +205,5 @@ $(document).ready(function() {
 		$("#language-filter li").removeClass("selected");
 		$(this).addClass("selected");
 	});
+
 });
