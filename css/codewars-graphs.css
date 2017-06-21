@@ -5,6 +5,11 @@ body {
 	color: #222;
 	padding: 0.5em 2em;
 }
+h1 {
+	padding-left: 44px;
+	background: url(../img/codewars-rainbow.png) no-repeat;
+	line-height: 36px;
+}
 
 #calendar {
 	position: relative;
@@ -13,7 +18,7 @@ body {
 	grid-gap: 2px;
 	border: 1px dotted #999;
 	padding: 1em 2px 2px 1.5em;
-	width: calc(1.5em + 52*0.75em + 104px);
+	width: calc(52*0.75em + 104px);
 }
 
 section.week {
@@ -64,6 +69,7 @@ section.week {
 }
 .today {
 	border: 1px dashed #999;
+	font-size: 1.2em;
 }
 #day-headings > div {
 	background: none;
@@ -105,4 +111,23 @@ ul.legend {
 }
 .legend h2 {
 	margin: 0.3em 0;
+}
+
+ul#language-filter {
+	display: flex;
+	margin-bottom: 1em;
+}
+#language-filter li {
+	padding: 0 0.5em;
+	border-right: 1px solid #999;
+	cursor: pointer;
+}
+#language-filter li:last-child {
+	border-none;
+}
+.selected {
+	font-weight: bold;
+}
+#language-filter li:hover {
+	text-decoration: underline;
 }

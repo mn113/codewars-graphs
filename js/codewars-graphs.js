@@ -17,10 +17,17 @@ function generateCalendar(target) {
 		// Create day div:
 		var $div = $("<div>").addClass("day").attr("data-date", currentDay.format("YYYY-MM-DD"));
 		// Mark today with x:
-		if (currentDay.isSame(today)) $div.addClass('today');
+		if (currentDay.isSame(today)) $div.addClass('today').html('&times;');
 		$div.appendTo($week);
 		if (currentDay.weekday() === 6) $week.appendTo($(target));
 		currentDay.add(1, "days");
+	}
+}
+
+function clearCalendar() {
+	$("#calendar .day").removeClass("tt").css("opacity", 1);
+	for (var lang of Object.keys(user.languageCounts)) {
+		$("#calendar .day").removeClass(lang);
 	}
 }
 
@@ -47,7 +54,10 @@ function getCompletedKatas(username) {
 		});
 }
 
-function renderKatas(katas) {
+function renderKatas(katas, filter = "") {
+	if (filter.length > 0) {
+		katas = katas.filter(kata => kata.completedLanguages.indexOf(filter) !== -1);
+	}
 	// Group by date:
 	var activeDates = _.countBy(katas, kata => kata.completedAt.substr(0,10));
 	// Apply data to calendar day-by-day:
@@ -69,7 +79,7 @@ function styleDay(date, dateKatas) {
 	// Group by language:
 	var langs = dateKatas.map(kata => kata.completedLanguages[0]);
 	var counts = _.countBy(langs);
-	console.log(counts);
+	//console.log(counts);
 	var topLang = _.maxBy(Object.keys(counts), value => counts[value]);
 	// Style based on top language:
 	$div.addClass(topLang).addClass('tt');
@@ -129,5 +139,14 @@ $(document).ready(function() {
 	}
 	);
 
-	var ctx = $('canvas').getContext('2d');
+	// Click filter names to render a filtered calendar of katas:
+	$("#language-filter li").on("click", function() {
+		var filter = $(this).data("filter");
+		console.log("Filtering by", filter);
+		clearCalendar();
+		renderKatas(user.completedKatas, filter);
+		// Move selected class:
+		$("#language-filter li").removeClass("selected");
+		$(this).addClass("selected");
+	});
 });
