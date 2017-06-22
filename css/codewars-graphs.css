@@ -15,7 +15,8 @@ h1 {
 /************/
 /* CALENDAR */
 /************/
-#calendar {
+#calendar,
+.face {
 	position: relative;
 	display: grid;
 	grid-template-columns: repeat(52, 0.75em); /* 1.5em */

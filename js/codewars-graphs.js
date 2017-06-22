@@ -176,6 +176,25 @@ function makeLegend() {
 	$(".legend").show();
 }
 
+function getLangRankData() {
+	var langRankData = [];
+	// Read from local csv file:
+	$.ajax({
+		type: "GET",
+		url: "kata-ranks-langs.json",
+		dataType: "json",
+		success: function(data) {
+			langRankData = data;
+			console.log(langRankData);
+			makeLangRankTable(data);
+		}
+	});
+	// Draw table:
+}
+
+function makeLangRankTable(data) {
+	
+}
 
 $(document).ready(function() {
 
@@ -205,5 +224,7 @@ $(document).ready(function() {
 		$("#language-filter li").removeClass("selected");
 		$(this).addClass("selected");
 	});
+
+	makeLangRankTable();
 
 });
