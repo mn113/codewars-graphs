@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta http-equiv="x-ua-compatible" content="ie=edge">
+	<title>Graphs</title>
+
+	<link rel="stylesheet" href="css/normalize.css">
+	<link rel="stylesheet" href="css/codewars-graphs.css">
+	<link rel="stylesheet" href="css/icomoon.css">
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/tipped/4.0.10/css/tipped/tipped.css">
+	<link rel="shortcut icon" href="img/favicon.png">
+	<style type="text/css">
+		#spinner1 {
+			position: relative;
+			xanimation: slowrotate 8s infinite;
+			transform-style: preserve-3d;
+			border: 1px solid yellow;
+			height: 15em;
+			transform: rotateX(0deg);
+			-webkit-user-select: none;
+		    -moz-user-select: moz-none;
+		    -ms-user-select: none;
+		    user-select: none;
+		}
+		@keyframes slowrotate {
+			from {
+				transform: rotateX(0deg);
+			}
+			to {
+				transform: rotateX(360deg);
+			}
+		}
+		.face {
+			position: absolute;
+			transform-origin: center center;
+		}
+		#face1 {
+			transform: translateZ(50px) rotateX(0deg);
+		}
+		#face2 {
+			transform: translateZ(50px) rotateX(90deg);
+			color: red;
+		}
+		#face3 {
+			transform: translateZ(50px) rotateX(180deg);
+			color: green;
+		}
+		#face4 {
+			transform: translateZ(50px) rotateX(270deg);
+			color: blue;
+		}
+	</style>
+</head>
+<body>
+
+	<div id="spinner1">
+		<div class="face" id="face1"></div>
+		<div class="face" id="face2"></div>
+		<div class="face" id="face3"></div>
+		<div class="face" id="face4"></div>
+	</div>
+
+	<script src="https://cdn.jsdelivr.net/axios/0.16.1/axios.min.js"></script>
+	<script src="https://cdn.jsdelivr.net/momentjs/2.18.1/moment.min.js"></script>
+	<script src="https://cdn.jsdelivr.net/lodash/4.17.4/lodash.min.js"></script>
+	<script src="http://code.jquery.com/jquery-3.1.1.min.js"></script>
+	<script src="https://cdn.jsdelivr.net/tipped/4.0.10/js/tipped/tipped.js"></script>
+	<script src="js/jquery.transit.min.js"></script>
+	<script src="js/codewars-graphs.js"></script>
+	<script lang="javascript">
+		generateCalendar("#face1");
+		generateCalendar("#face2");
+		generateCalendar("#face3");
+		generateCalendar("#face4");
+
+		var curYPos, curDown;
+		var $container = $("#spinner1");
+
+		window.addEventListener('mousemove', function(e) {
+			if (curDown) {
+				var rotation = $container.css('rotateX');
+				console.log(rotation);
+				$container.transition({
+					rotateX: rotation + curYPos - e.pageY
+				});
+			}
+		});
+
+		window.addEventListener('mousedown', function(e) {
+			curYPos = e.pageY;
+			curDown = true;
+		});
+
+		window.addEventListener('mouseup', function(e) {
+			curDown = false;
+		});
+	</script>
+</body>
+</html>
