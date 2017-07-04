@@ -152,3 +152,24 @@ ul#language-filter {
 .selected {
 	font-weight: bold;
 }
+
+
+/*********/
+/* TABLE */
+/*********/
+#langRankTable {
+	font-size: 0.8em;
+	border-collapse: collapse;
+}
+th, td {
+	border: 1px dotted #333;
+	text-align: center;
+}
+th {
+	width: 4em;
+	overflow: hidden;
+}
+
+hr {
+	margin: 2em 0;
+}

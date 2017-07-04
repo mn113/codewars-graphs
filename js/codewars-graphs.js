@@ -185,16 +185,48 @@ function getLangRankData() {
 		dataType: "json",
 		success: function(data) {
 			langRankData = data;
-			console.log(langRankData);
+			//console.log(langRankData);
 			makeLangRankTable(data);
 		}
 	});
 	// Draw table:
 }
 
+var ranks = ['Beta', '8 kyu', '7 kyu', '6 kyu', '5 kyu', '4 kyu', '3 kyu', '2 kyu', '1 kyu'];
+
 function makeLangRankTable(data) {
-	
+	var $headerRow = $("#th_langs");
+	for (var rank of ranks) {
+		// Make a table row with row heading:
+		var $tr = $("<tr>").html($("<th>").html(rank));
+		for (var lang of Object.keys(user.languageCounts)) {
+			// Make a column heading:
+			if (rank === 'Beta') $headerRow.append($("<th>").html(lang));
+			// Make the empty table cell:
+			$tr.append($("<td>").html('0'));
+		}
+		$("#langRankTable").append($tr);
+	}
+	fillLanguageRankTable(data);
 }
+
+function fillLanguageRankTable(data) {
+	for (var kata of data) {
+		// Boost appropriate table cell:
+		var x = Object.keys(user.languageCounts).indexOf(kata.lang.toLowerCase());
+		var y = ranks.indexOf(kata.rank);
+		var $td = $("#langRankTable").find("tr:nth-child("+(y+2)+")").find("td:nth-child("+(x+2)+")");
+		// Increment cell:
+		$td.html(parseInt($td.html()) + 1);
+	}
+	// Colour cells:
+	$("td").each(function() {
+		$(this).css({
+			background: 'rgba(180,0,255,'+ 0.03 * parseInt($(this).html()) +')'
+		});
+	});
+}
+
 
 $(document).ready(function() {
 
@@ -225,6 +257,6 @@ $(document).ready(function() {
 		$(this).addClass("selected");
 	});
 
-	makeLangRankTable();
+	setTimeout(getLangRankData, 2000);
 
 });
