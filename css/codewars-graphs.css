@@ -10,7 +10,14 @@ h1 {
 	background: url(../img/codewars-rainbow.png) no-repeat;
 	line-height: 36px;
 }
-
+h1 input {
+	color: blue;
+	font-weight: bold;
+	width: 5em;
+}
+h1 button {
+	font-size: 1rem;
+}
 
 /************/
 /* CALENDAR */

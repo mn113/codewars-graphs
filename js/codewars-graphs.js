@@ -31,7 +31,8 @@ function clearCalendar() {
 	}
 }
 
-var baseUrl = "https://www.codewars.com/api/v1/";
+//var baseUrl = "https://www.codewars.com/api/v1/";
+var baseUrl = "http://localhost:5050";
 
 var user = {
 	username: "mn113",		// later need to scrape this from page
@@ -44,8 +45,8 @@ var user = {
 //var secrets = axios.get("js/secret.json").then(resp => resp.data);
 
 function getCompletedKatas(username) {
-	//var url = baseUrl + "users/" + username + "/code-challenges/completed";
-	axios.get("js/mn113completed.json")
+	var url = baseUrl + "users/" + username + "/code-challenges/completed";
+	axios.get(baseUrl)//"js/mn113completed.json")
 		.then(function(resp) {
 			user.completedKatas = resp.data.data;
 			user.languageCounts = _.countBy(resp.data.data, kata => kata.completedLanguages[0]);
@@ -229,6 +230,16 @@ function fillLanguageRankTable(data) {
 
 
 $(document).ready(function() {
+
+	// Set title:
+	$("h1 input").val(user.username);
+
+	// Username input:
+	$("h1 form").on("submit", function() {
+		user.username = $("h1 input").val();
+		// Reload page:
+		window.location = window.origin + window.pathname + '/user/' + user.username;
+	});
 
 	generateCalendar("#calendar");
 
