@@ -20,7 +20,7 @@ function getUser(username) {
 	var url = baseUrl + "/users/" + username;
 	return axios.get(url)
 		.then(function(resp) {
-			console.log(resp);
+			console.log("User response", resp);
 			// store fetched CodeWars user data on local user object:
 			user.details = resp.data;
 			renderUser(resp.data);
@@ -33,7 +33,7 @@ function getUser(username) {
 }
 
 function getCompletedKatas(username) {
-	var url = baseUrl + "users/" + username + "/code-challenges/completed";
+	var url = baseUrl + "/users/" + username + "/code-challenges/completed";
 	axios.get(url)
 		.then(function(resp) {
 			user.completedKatas = resp.data.data;
@@ -49,7 +49,7 @@ function getCompletedKatas(username) {
 function renderUser(details) {
 	var $userDiv = $("#user-profile");
 	$userDiv.append($("<h2>").html(details.username));
-	$userDiv.append($("<i>").html(details.ranks.overall.name).addClass(details.ranks.overall.color));
+	$userDiv.append(renderRankPill(details.ranks.overall.name));
 	var $dl = $("<dl>");
 	var languages = Object.keys(details.ranks.languages);
 	$dl.append("<dt>Honor</dt><dd>"+details.honor+' points</dd>');
@@ -58,6 +58,29 @@ function renderUser(details) {
 	$dl.append("<dt>Authored kata</dt><dd>"+details.codeChallenges.totalAuthored+"</dd>");
 	$dl.append("<dt>Languages</dt><dd>"+languages.join(", ")+"</dd>");
 	$userDiv.append($dl);
+}
+
+// Make a small coloured icon:
+function renderRankPill(rank) {
+	var colours = {
+		'Beta': 'grey',
+		'8 kyu': 'white',
+		'7 kyu': 'white',
+		'6 kyu': 'yellow',
+		'5 kyu': 'yellow',
+		'4 kyu': 'blue',
+		'3 kyu': 'blue',
+		'2 kyu': 'purple',
+		'1 kyu': 'purple'
+	};
+	var $outerDiv = $("<div>").addClass("small-hex is-extra-wide is-invertable is-"+colours[rank]+"-rank");
+	var $innerDiv = $("<div>").addClass("inner-small-hex is-extra-wide");
+	return $outerDiv.append($innerDiv.append($("<span>").html(rank)));
+	//	<div class="small-hex is-extra-wide is-invertable is-blue-rank">
+	//		<div class="inner-small-hex is-extra-wide ">
+	//			<span>3 kyu</span>
+	//		</div>
+	//	</div>
 }
 
 /* DRAW CALENDAR */
@@ -133,7 +156,7 @@ function styleDay(date, dateKatas) {
 	// Style based on top language:
 	$div.addClass(topLang).addClass('tt');
 	// Insert a small pie chart canvas:
-	$div.append(createCanvas(date));
+	$div.html(createCanvas(date));
 	drawPieOnCanvas(counts, date);
 }
 
@@ -243,7 +266,7 @@ var ranks = ['Beta', '8 kyu', '7 kyu', '6 kyu', '5 kyu', '4 kyu', '3 kyu', '2 ky
 
 function getLangRankData() {
 	var langRankData = [];
-	// Read from local csv file:
+	// Read from local json file:
 	$.ajax({
 		type: "GET",
 		url: "kata-ranks-langs.json",
@@ -292,7 +315,7 @@ function fillLanguageRankTable(data) {
 
 
 function polyfillsAreLoaded() {
-	console.log('Now to do the cool stuff...');
+	console.log('Polyfills loaded, beginning main function');
 	// jQuery has loaded, document too:
 	$(document).ready(function() {
 
@@ -300,29 +323,30 @@ function polyfillsAreLoaded() {
 		generateCalendar("#calendar");
 
 		var urlParams = new URL(location.href).searchParams;	// needs polyfill for IE8-11
-		console.log(urlParams);
 
 		// Set user from URL string on page load:
 		if (urlParams.get('user')) {
 			// Check validity by API request:
 			var cwUserPromise = getUser(urlParams.get('user'));
-			console.log(cwUserPromise);
+			console.log("User", cwUserPromise);
 			// Depends on promise resolving:
 			cwUserPromise.then(cwUser => {
 				// Set title:
 				if (cwUser) {
 					$("h1 input").val(cwUser.data.username);
+					$("h1 input").attr('size', $(this).val().length);	// DOESN't WORK
+					// Start fetching data for calendar:
 					getCompletedKatas(user.details.username);
 				}
 			});
 		}
 
-		// Username input:
+		// Reload page on username input:
 		$("h1 form").on("submit", function(e) {
 			e.preventDefault();
 			// Check validity by API request:
 			var cwUserPromise = getUser($("h1 input").val());
-			console.log(cwUserPromise);
+			console.log("User", cwUserPromise);
 			// Depends on promise resolving:
 			cwUserPromise.then(cwUser => {
 				// Reload page:
