@@ -18,7 +18,7 @@ var baseUrl = "http://localhost:5050";
 
 function getUser(username) {
 	var url = baseUrl + "/users/" + username;
-	return axios.get(url)			//"js/mn113completed.json")
+	return axios.get(url)
 		.then(function(resp) {
 			console.log(resp);
 			// store fetched CodeWars user data on local user object:
@@ -34,7 +34,7 @@ function getUser(username) {
 
 function getCompletedKatas(username) {
 	var url = baseUrl + "users/" + username + "/code-challenges/completed";
-	axios.get(url)		//"js/mn113completed.json")
+	axios.get(url)
 		.then(function(resp) {
 			user.completedKatas = resp.data.data;
 			user.languageCounts = _.countBy(resp.data.data, kata => kata.completedLanguages[0]);
@@ -291,55 +291,59 @@ function fillLanguageRankTable(data) {
 }
 
 
-$(document).ready(function() {
+function polyfillsAreLoaded() {
+	console.log('Now to do the cool stuff...');
+	// jQuery has loaded, document too:
+	$(document).ready(function() {
 
-	// Display blank calendar no matter what:
-	generateCalendar("#calendar");
+		// Display blank calendar no matter what:
+		generateCalendar("#calendar");
 
-	var urlParams = new URL(location.href).searchParams;	// needs polyfill for IE8-11
-	console.log(urlParams);
+		var urlParams = new URL(location.href).searchParams;	// needs polyfill for IE8-11
+		console.log(urlParams);
 
-	// Set user from URL string on page load:
-	if (urlParams.get('user')) {
-		// Check validity by API request:
-		var cwUserPromise = getUser(urlParams.get('user'));
-		console.log(cwUserPromise);
-		// Depends on promise resolving:
-		cwUserPromise.then(cwUser => {
-			// Set title:
-			if (cwUser) {
-				$("h1 input").val(cwUser.data.username);
-				getCompletedKatas(user.details.username);
-			}
+		// Set user from URL string on page load:
+		if (urlParams.get('user')) {
+			// Check validity by API request:
+			var cwUserPromise = getUser(urlParams.get('user'));
+			console.log(cwUserPromise);
+			// Depends on promise resolving:
+			cwUserPromise.then(cwUser => {
+				// Set title:
+				if (cwUser) {
+					$("h1 input").val(cwUser.data.username);
+					getCompletedKatas(user.details.username);
+				}
+			});
+		}
+
+		// Username input:
+		$("h1 form").on("submit", function(e) {
+			e.preventDefault();
+			// Check validity by API request:
+			var cwUserPromise = getUser($("h1 input").val());
+			console.log(cwUserPromise);
+			// Depends on promise resolving:
+			cwUserPromise.then(cwUser => {
+				// Reload page:
+				//console.log(window.location.origin + window.location.pathname + '?user='  + cwUser.data.username);
+				if (cwUser) window.location.href = window.location.origin + window.location.pathname + '?user=' + cwUser.data.username;
+				else $("h1 input").addClass("invalid");
+			});
 		});
-	}
 
-	// Username input:
-	$("h1 form").on("submit", function(e) {
-		e.preventDefault();
-		// Check validity by API request:
-		var cwUserPromise = getUser($("h1 input").val());
-		console.log(cwUserPromise);
-		// Depends on promise resolving:
-		cwUserPromise.then(cwUser => {
-			// Reload page:
-			//console.log(window.location.origin + window.location.pathname + '?user='  + cwUser.data.username);
-			if (cwUser) window.location.href = window.location.origin + window.location.pathname + '?user=' + cwUser.data.username;
-			else $("h1 input").addClass("invalid");
+		// Click filter names to render a filtered calendar of katas:
+		$("#language-filter li").on("click", function() {
+			var filter = $(this).data("filter");
+			console.log("Filtering by", filter);
+			clearCalendar();
+			renderKatas(user.completedKatas, filter);
+			// Move selected class:
+			$("#language-filter li").removeClass("selected");
+			$(this).addClass("selected");
 		});
+
+		setTimeout(getLangRankData, 2000);
+
 	});
-
-	// Click filter names to render a filtered calendar of katas:
-	$("#language-filter li").on("click", function() {
-		var filter = $(this).data("filter");
-		console.log("Filtering by", filter);
-		clearCalendar();
-		renderKatas(user.completedKatas, filter);
-		// Move selected class:
-		$("#language-filter li").removeClass("selected");
-		$(this).addClass("selected");
-	});
-
-	setTimeout(getLangRankData, 2000);
-
-});
+}
