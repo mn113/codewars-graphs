@@ -30,9 +30,9 @@ var server = http.createServer(function(req, res) {
 		console.log(baseUrl+req.url);
 		console.log(response.status, response.statusText);
 		//return response.json();	// can't use both .text and .json
-	});
+	})
 	//.then(json => console.log(json))
-	//.catch(err => console.log(err));
+	.catch(err => console.log(err));
 
 });
 

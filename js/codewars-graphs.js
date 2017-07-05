@@ -17,6 +17,9 @@ var user = {
 var baseUrl = "http://localhost:5050";
 
 function getUser(username) {
+	// Loading spinner:
+	$("#user-profile").addClass("loading");
+
 	var url = baseUrl + "/users/" + username;
 	return axios.get(url)
 		.then(function(resp) {
@@ -38,6 +41,7 @@ function getCompletedKatas(username) {
 		.then(function(resp) {
 			user.completedKatas = resp.data.data;
 			user.languageCounts = _.countBy(resp.data.data, kata => kata.completedLanguages[0]);
+			$("#calendar").removeClass("loading");
 			renderKatas(user.completedKatas);
 			makeLegend();
 		});
@@ -48,6 +52,7 @@ function getCompletedKatas(username) {
 // Fill the #user div with user HTML:
 function renderUser(details) {
 	var $userDiv = $("#user-profile");
+	$userDiv.removeClass("loading");
 	$userDiv.append($("<h2>").html(details.username));
 	$userDiv.append(renderRankPill(details.ranks.overall.name));
 	var $dl = $("<dl>");
@@ -107,6 +112,9 @@ function generateCalendar(target) {
 		if (currentDay.weekday() === 6) $week.appendTo($(target));
 		currentDay.add(1, "days");
 	}
+
+	// Loading animation:
+	$(target).addClass("loading");
 }
 
 function clearCalendar() {
@@ -334,7 +342,7 @@ function polyfillsAreLoaded() {
 				// Set title:
 				if (cwUser) {
 					$("h1 input").val(cwUser.data.username);
-					$("h1 input").attr('size', $(this).val().length);	// DOESN't WORK
+					$("h1 input").width($("h1 input").val().length * 20);
 					// Start fetching data for calendar:
 					getCompletedKatas(user.details.username);
 				}
@@ -371,3 +379,8 @@ function polyfillsAreLoaded() {
 
 	});
 }
+
+// jQuery helper:
+$.fn.random = function() {
+	return this.eq(Math.floor(Math.random() * this.length));
+};

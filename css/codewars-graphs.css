@@ -35,16 +35,23 @@ h1 input.invalid {
 /* PROFILE */
 /***********/
 #user-profile {
+	position: relative;
 	float: right;
 	width: 15em;
 	border: 1px solid #ccc;
-	paddinG: 0.6em;
+	padding: 0.6em;
+	min-height: 50px;
 }
 .blue {
 	color: dodgerblue;
 }
 .purple {
 	color: blueviolet;
+}
+.loading:before {
+	content: url(../img/gears.svg);
+	position: absolute;
+	left: calc(50% - 24px);
 }
 
 
@@ -211,9 +218,9 @@ hr {
 }
 
 
+/***************/
 /* KYU BUTTONS */
-
-
+/***************/
 .small-hex {
     height: 26px;
     width: 15px;
