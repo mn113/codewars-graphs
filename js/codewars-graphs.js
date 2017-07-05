@@ -23,6 +23,7 @@ function getUser(username) {
 			console.log(resp);
 			// store fetched CodeWars user data on local user object:
 			user.details = resp.data;
+			renderUser(resp.data);
 			return resp;
 		})
 		.catch(function(err) {
@@ -33,13 +34,30 @@ function getUser(username) {
 
 function getCompletedKatas(username) {
 	var url = baseUrl + "users/" + username + "/code-challenges/completed";
-	axios.get(url)//"js/mn113completed.json")
+	axios.get(url)		//"js/mn113completed.json")
 		.then(function(resp) {
 			user.completedKatas = resp.data.data;
 			user.languageCounts = _.countBy(resp.data.data, kata => kata.completedLanguages[0]);
 			renderKatas(user.completedKatas);
 			makeLegend();
 		});
+}
+
+/* FILL USER PROFILE */
+
+// Fill the #user div with user HTML:
+function renderUser(details) {
+	var $userDiv = $("#user-profile");
+	$userDiv.append($("<h2>").html(details.username));
+	$userDiv.append($("<i>").html(details.ranks.overall.name).addClass(details.ranks.overall.color));
+	var $dl = $("<dl>");
+	var languages = Object.keys(details.ranks.languages);
+	$dl.append("<dt>Honor</dt><dd>"+details.honor+' points</dd>');
+	$dl.append("<dt>Leaderboard</dt><dd>"+details.leaderboardPosition+'</dd>');
+	$dl.append("<dt>Completed kata</dt><dd>"+details.codeChallenges.totalCompleted+"</dd>");
+	$dl.append("<dt>Authored kata</dt><dd>"+details.codeChallenges.totalAuthored+"</dd>");
+	$dl.append("<dt>Languages</dt><dd>"+languages.join(", ")+"</dd>");
+	$userDiv.append($dl);
 }
 
 /* DRAW CALENDAR */
@@ -91,6 +109,8 @@ function renderKatas(katas, filter = "") {
 	for (var date of Object.keys(activeDates)) {
 		styleDay(date, katas.filter(kata => kata.completedAt.substr(0,10) === date));
 	}
+
+	createCalendarTooltips();
 }
 
 /* CALENDAR DAY */
@@ -168,6 +188,20 @@ function drawPieOnCanvas(data, date) {
 }
 
 /* CALENDAR EXTRAS */
+
+function createCalendarTooltips() {
+	Tipped.create('.day', function() {
+		if (!$(this).hasClass('tt')) return '';
+		else return {
+			title: moment($(this).data("date")).format("dddd, Do MMMM"),
+			content: makeTooltipContent($(this).data("kataids").split(','))
+		};
+	}, {
+		position: 'top',	// ignored!
+		skin: 'light'		// ignored!
+	}
+	);
+}
 
 function makeTooltipContent(kataids) {
 	var $ul = $("<ul>").addClass("tt-katas");
@@ -259,8 +293,10 @@ function fillLanguageRankTable(data) {
 
 $(document).ready(function() {
 
-	//var params = new URLSearchParams(location.search.slice(1));
-	var urlParams = new URL(location.href).searchParams;
+	// Display blank calendar no matter what:
+	generateCalendar("#calendar");
+
+	var urlParams = new URL(location.href).searchParams;	// needs polyfill for IE8-11
 	console.log(urlParams);
 
 	// Set user from URL string on page load:
@@ -271,7 +307,10 @@ $(document).ready(function() {
 		// Depends on promise resolving:
 		cwUserPromise.then(cwUser => {
 			// Set title:
-			$("h1 input").val(cwUser.data.username);
+			if (cwUser) {
+				$("h1 input").val(cwUser.data.username);
+				getCompletedKatas(user.details.username);
+			}
 		});
 	}
 
@@ -284,26 +323,11 @@ $(document).ready(function() {
 		// Depends on promise resolving:
 		cwUserPromise.then(cwUser => {
 			// Reload page:
-			console.log(window.location.origin + window.location.pathname + '?user='  + cwUser.data.username);
-			window.location.href = window.location.origin + window.location.pathname + '?user=' + cwUser.data.username;
+			//console.log(window.location.origin + window.location.pathname + '?user='  + cwUser.data.username);
+			if (cwUser) window.location.href = window.location.origin + window.location.pathname + '?user=' + cwUser.data.username;
+			else $("h1 input").addClass("invalid");
 		});
 	});
-
-	generateCalendar("#calendar");
-
-	getCompletedKatas(user.details.username);
-
-	Tipped.create('.day', function() {
-		if (!$(this).hasClass('tt')) return '';
-		else return {
-			title: moment($(this).data("date")).format("dddd, Do MMMM"),
-			content: makeTooltipContent($(this).data("kataids").split(','))
-		};
-	}, {
-		position: 'top',	// ignored!
-		skin: 'light'		// ignored!
-	}
-	);
 
 	// Click filter names to render a filtered calendar of katas:
 	$("#language-filter li").on("click", function() {

@@ -26,6 +26,20 @@ h1 button {
 h1 form {
 	display: inline;
 }
+h1 form.invalid {
+	border: 1px solid red;
+}
+
+
+/***********/
+/* PROFILE */
+/***********/
+#user-profile {
+	float: right;
+	width: 15em;
+	border: 1px solid #ccc;
+	paddinG: 0.6em;
+}
 
 
 /************/
