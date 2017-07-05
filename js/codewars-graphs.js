@@ -1,5 +1,49 @@
 /* global axios, $, moment, _, Opentip, Tipped, Tooltip */
 
+var user = {
+	details: null,
+	username: "mn113",		// later need to scrape this from page
+	completedKatas: [],
+	authoredKatas: [],
+	languageCounts: {}
+};
+
+/* FETCH REMOTE DATA */
+
+// Obtain Codewars API key (locally):
+//var secrets = axios.get("js/secret.json").then(resp => resp.data);
+
+//var baseUrl = "https://www.codewars.com/api/v1/";
+var baseUrl = "http://localhost:5050";
+
+function getUser(username) {
+	var url = baseUrl + "/users/" + username;
+	return axios.get(url)			//"js/mn113completed.json")
+		.then(function(resp) {
+			console.log(resp);
+			// store fetched CodeWars user data on local user object:
+			user.details = resp.data;
+			return resp;
+		})
+		.catch(function(err) {
+			console.log(err);
+			return false;
+		});
+}
+
+function getCompletedKatas(username) {
+	var url = baseUrl + "users/" + username + "/code-challenges/completed";
+	axios.get(url)//"js/mn113completed.json")
+		.then(function(resp) {
+			user.completedKatas = resp.data.data;
+			user.languageCounts = _.countBy(resp.data.data, kata => kata.completedLanguages[0]);
+			renderKatas(user.completedKatas);
+			makeLegend();
+		});
+}
+
+/* DRAW CALENDAR */
+
 function generateCalendar(target) {
 	var today = moment().endOf("day");
 	// Find next Sunday:
@@ -31,29 +75,7 @@ function clearCalendar() {
 	}
 }
 
-//var baseUrl = "https://www.codewars.com/api/v1/";
-var baseUrl = "http://localhost:5050";
-
-var user = {
-	username: "mn113",		// later need to scrape this from page
-	completedKatas: [],
-	authoredKatas: [],
-	languageCounts: {}
-};
-
-// Obtain Codewars API key (locally):
-//var secrets = axios.get("js/secret.json").then(resp => resp.data);
-
-function getCompletedKatas(username) {
-	var url = baseUrl + "users/" + username + "/code-challenges/completed";
-	axios.get(baseUrl)//"js/mn113completed.json")
-		.then(function(resp) {
-			user.completedKatas = resp.data.data;
-			user.languageCounts = _.countBy(resp.data.data, kata => kata.completedLanguages[0]);
-			renderKatas(user.completedKatas);
-			makeLegend();
-		});
-}
+/* FILL CALENDAR */
 
 function renderKatas(katas, filter = "") {
 	if (filter.length > 0) {
@@ -70,6 +92,8 @@ function renderKatas(katas, filter = "") {
 		styleDay(date, katas.filter(kata => kata.completedAt.substr(0,10) === date));
 	}
 }
+
+/* CALENDAR DAY */
 
 function styleDay(date, dateKatas) {
 	// Element to style:
@@ -143,6 +167,8 @@ function drawPieOnCanvas(data, date) {
 	}
 }
 
+/* CALENDAR EXTRAS */
+
 function makeTooltipContent(kataids) {
 	var $ul = $("<ul>").addClass("tt-katas");
 	for (var id of kataids) {
@@ -177,6 +203,10 @@ function makeLegend() {
 	$(".legend").show();
 }
 
+/* LANG-RANKS */
+
+var ranks = ['Beta', '8 kyu', '7 kyu', '6 kyu', '5 kyu', '4 kyu', '3 kyu', '2 kyu', '1 kyu'];
+
 function getLangRankData() {
 	var langRankData = [];
 	// Read from local csv file:
@@ -192,8 +222,6 @@ function getLangRankData() {
 	});
 	// Draw table:
 }
-
-var ranks = ['Beta', '8 kyu', '7 kyu', '6 kyu', '5 kyu', '4 kyu', '3 kyu', '2 kyu', '1 kyu'];
 
 function makeLangRankTable(data) {
 	var $headerRow = $("#th_langs");
@@ -231,19 +259,39 @@ function fillLanguageRankTable(data) {
 
 $(document).ready(function() {
 
-	// Set title:
-	$("h1 input").val(user.username);
+	//var params = new URLSearchParams(location.search.slice(1));
+	var urlParams = new URL(location.href).searchParams;
+	console.log(urlParams);
+
+	// Set user from URL string on page load:
+	if (urlParams.get('user')) {
+		// Check validity by API request:
+		var cwUserPromise = getUser(urlParams.get('user'));
+		console.log(cwUserPromise);
+		// Depends on promise resolving:
+		cwUserPromise.then(cwUser => {
+			// Set title:
+			$("h1 input").val(cwUser.data.username);
+		});
+	}
 
 	// Username input:
-	$("h1 form").on("submit", function() {
-		user.username = $("h1 input").val();
-		// Reload page:
-		window.location = window.origin + window.pathname + '/user/' + user.username;
+	$("h1 form").on("submit", function(e) {
+		e.preventDefault();
+		// Check validity by API request:
+		var cwUserPromise = getUser($("h1 input").val());
+		console.log(cwUserPromise);
+		// Depends on promise resolving:
+		cwUserPromise.then(cwUser => {
+			// Reload page:
+			console.log(window.location.origin + window.location.pathname + '?user='  + cwUser.data.username);
+			window.location.href = window.location.origin + window.location.pathname + '?user=' + cwUser.data.username;
+		});
 	});
 
 	generateCalendar("#calendar");
 
-	getCompletedKatas();
+	getCompletedKatas(user.details.username);
 
 	Tipped.create('.day', function() {
 		if (!$(this).hasClass('tt')) return '';

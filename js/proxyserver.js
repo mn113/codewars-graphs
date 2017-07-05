@@ -2,6 +2,13 @@ const http = require('http');
 const fetch = require('node-fetch');
 
 var server = http.createServer(function(req, res) {
+
+	// Set CORS headers
+	res.setHeader('Access-Control-Allow-Origin', '*');
+	res.setHeader('Access-Control-Request-Method', '*');
+	res.setHeader('Access-Control-Allow-Methods', 'OPTIONS, GET');
+	res.setHeader('Access-Control-Allow-Headers', '*');
+
 	// CODEWARS API ENDPOINTS == MY LOCAL PROXY ENDPOINTS
 	// /users/:id_or_username
 	// /users/:id_or_username/code-challenges/completed?page=0
@@ -22,10 +29,10 @@ var server = http.createServer(function(req, res) {
 	fetched.then(response => {
 		console.log(baseUrl+req.url);
 		console.log(response.status, response.statusText);
-		return response.json();
-	})
-	.then(json => console.log(json))
-	.catch(err => console.log(err));
+		//return response.json();	// can't use both .text and .json
+	});
+	//.then(json => console.log(json))
+	//.catch(err => console.log(err));
 
 });
 
