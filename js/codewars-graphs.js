@@ -109,7 +109,7 @@ function renderUser(details) {
 	var $userDiv = $("#user-profile");
 	$userDiv.removeClass("loading");
 	$userDiv.append($("<h2>").html(details.username));
-	$userDiv.append(renderRankPill(details.ranks.overall.name));
+	$userDiv.append("<svg><use xlink:href='img/rankpill.svg#"+details.ranks.overall.name.replace(' ','-')+"'></use></svg>");
 	var $dl = $("<dl>");
 	var languages = Object.keys(details.ranks.languages);
 	$dl.append("<dt>Honor</dt><dd>"+details.honor+' points</dd>');

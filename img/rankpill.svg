@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg xmlns="http://www.w3.org/2000/svg"
+	 xmlns:xlink="http://www.w3.org/1999/xlink"
+     version="1.1"
+	 xml:space="preserve"
+	 width="45px" height="24px"
+	 viewBox="-2 0 69 34"
+	 preserveAspectRatio="xMidYMid meet">
+<defs>
+	<path id="hexagon" d="M0,15 L10,0 L55,0 L65,15 L55,30 L10,30 L0,15 Z"  stroke-width="3" fill="none"/>
+</defs>
+<g transform="translate(2 2)">
+	<symbol id="8-kyu" viewBox="-2 0 69 34">
+		<use href="#hexagon" stroke="#e6e6e6"/>
+		<text x="13" y="20" font-size="16" font-weight="bold" fill="#e6e6e6">8 kyu</text>
+	</symbol>
+	<symbol id="7-kyu" viewBox="-2 0 69 34">
+		<use href="#hexagon" stroke="#e6e6e6"/>
+		<text x="13" y="20" font-size="16" font-weight="bold" fill="#e6e6e6">7 kyu</text>
+	</symbol>
+	<symbol id="6-kyu" viewBox="-2 0 69 34">
+		<use href="#hexagon" stroke="#ecb613"/>
+		<text x="13" y="20" font-size="16" font-weight="bold" fill="#ecb613">6 kyu</text>
+	</symbol>
+	<symbol id="5-kyu" viewBox="-2 0 69 34">
+		<use href="#hexagon" stroke="#ecb613"/>
+		<text x="13" y="20" font-size="16" font-weight="bold" fill="#ecb613">5 kyu</text>
+	</symbol>
+	<symbol id="4-kyu" viewBox="-2 0 69 34">
+		<use href="#hexagon" stroke="#3c7ebb"/>
+		<text x="13" y="20" font-size="16" font-weight="bold" fill="#3c7ebb">4 kyu</text>
+	</symbol>
+	<symbol id="3-kyu" viewBox="-2 0 69 34">
+		<use href="#hexagon" stroke="#3c7ebb"/>
+		<text x="13" y="20" font-size="16" font-weight="bold" fill="#3c7ebb">3 kyu</text>
+	</symbol>
+	<symbol id="2-kyu" viewBox="-2 0 69 34">
+		<use href="#hexagon" stroke="#866cc7"/>
+		<text x="13" y="20" font-size="16" font-weight="bold" fill="#866cc7">2 kyu</text>
+	</symbol>
+	<symbol id="1-kyu" viewBox="-2 0 69 34">
+		<use href="#hexagon" stroke="#866cc7"/>
+		<text x="13" y="20" font-size="16" font-weight="bold" fill="#866cc7">1 kyu</text>
+	</symbol>
+	<symbol id="beta" viewBox="-2 0 69 34">
+		<path d="M0,0 L55,0 L65,15 L55,30 L0,30 L0,0 Z"  fill="#666"/>
+		<text x="13" y="20" font-size="16" font-weight="bold" fill="#e6e6e6">Beta</text>
+	</symbol>
+</g>
+</svg>

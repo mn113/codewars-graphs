@@ -243,6 +243,13 @@ hr {
 }
 
 
+svg {
+	width: 45px;
+	height: 24px;
+	display: inline;
+	max-height: 100%;
+}
+
 /***************/
 /* KYU BUTTONS */
 /***************/
