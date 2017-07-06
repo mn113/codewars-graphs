@@ -109,7 +109,7 @@ function renderUser(details) {
 	var $userDiv = $("#user-profile");
 	$userDiv.removeClass("loading");
 	$userDiv.append($("<h2>").html(details.username));
-	$userDiv.append("<svg><use xlink:href='img/rankpill.svg#"+details.ranks.overall.name.replace(' ','-')+"'></use></svg>");
+	$userDiv.append(makeRankPill(details.ranks.overall.name));
 	var $dl = $("<dl>");
 	var languages = Object.keys(details.ranks.languages);
 	$dl.append("<dt>Honor</dt><dd>"+details.honor+' points</dd>');
@@ -286,12 +286,13 @@ function makeTooltipContent(kataids) {
 		// Lookup id in big kata list:
 		var kata = _.find(user.completedKatas, (kata) => kata.id === id);
 		// Lookup id in localStorage to get rank:
-		var rank = JSON.parse(localStorage.getItem(id)).rank.name.replace(' ', '-');
+		var rank = JSON.parse(localStorage.getItem(id)).rank.name;
 		// Build html:
 		var $li = $("<li>");
-		var $rank = $("<span>")
-			.addClass(rank)
-			.html(rank);
+		$li.html(makeRankPill(rank));
+		//var $rank = $("<span>")
+		//	.addClass(rank)
+		//	.html(rank);
 		var $icon = $("<i>")
 			.addClass(kata.completedLanguages[0])
 			.addClass("icon-moon-"+kata.completedLanguages[0]);
@@ -299,12 +300,17 @@ function makeTooltipContent(kataids) {
 			.attr("href", "https://www.codewars.com/kata/"+kata.slug)
 			.attr("target", "_blank")
 			.html(kata.name);
-		$rank.appendTo($li);
+		//$rank.appendTo($li);
 		$icon.appendTo($li);
 		$anchor.appendTo($li);
 		$li.appendTo($ul);
 	}
 	return $ul;
+}
+
+function makeRankPill(rank) {
+	if (!rank) rank = 'beta';
+	return "<svg><use xlink:href='img/rankpill.svg#" + rank.replace(' ','-') + "'></use></svg>";
 }
 
 function makeLegend() {
