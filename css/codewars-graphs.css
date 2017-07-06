@@ -148,6 +148,14 @@ section.week {
 .day.csharp   { background: fuchsia; }
 .day.crystal   { background: black; }
 
+.day.flash-once {
+	animation: 0.6s flash-once 1;
+}
+@keyframes flash-once {
+	0%, 100% { background: #eee; }
+	50% { background: #333; }
+}
+
 
 /*********/
 /* ICONS */

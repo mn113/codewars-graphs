@@ -28,6 +28,7 @@ var user = {
 	languageCounts: {}
 };
 
+
 /* FETCH REMOTE DATA */
 
 // Obtain Codewars API key (locally):
@@ -36,7 +37,10 @@ var user = {
 //var baseUrl = "https://www.codewars.com/api/v1/";
 var baseUrl = "http://localhost:5050";
 
+// Fetch user profile from localStorage or CW API:
 function getUser(username) {
+	if (typeof username === 'undefined') return;
+
 	// Loading spinner:
 	$("#user-profile").addClass("loading");
 
@@ -67,24 +71,41 @@ function getUser(username) {
 	}
 }
 
-function getCompletedKatas(username) {
-	var url = baseUrl + "/users/" + username + "/code-challenges/completed";
+// Fetch current user's completed katas from CW API in multiple pages:
+function getCompletedKatas(username, page) {
+	if (typeof page === 'undefined') page = 0;
+	if (typeof username === 'undefined') return;
+
+	var url = baseUrl + "/users/" + username + "/code-challenges/completed?page=" + page;
 	axios.get(url)
 		.then(function(resp) {
-			user.completedKatas = resp.data.data;
-			user.languageCounts = _.countBy(resp.data.data, kata => kata.completedLanguages[0]);
-			$("#calendar").removeClass("loading");
-			renderKatas(user.completedKatas);
-			user.completedKatas.forEach(function(kata) {
-				getKataDetails(kata.id);
-			});
-			makeLegend();
+			user.completedKatas = user.completedKatas.concat(resp.data.data);
+			// Do we have them all?
+			if (resp.data.data.length < 200) {
+				user.languageCounts = _.countBy(resp.data.data, kata => kata.completedLanguages[0]);
+
+				// Stop loading animation and start render:
+				stopCalendarLoadingAnim();
+				$("#calendar").removeClass("loading");
+				renderKatas(user.completedKatas);
+
+				// Get individual kata details:
+				user.completedKatas.forEach(function(kata) {
+					getKataDetails(kata.id);
+				});
+				makeLegend();
+			}
+			else {
+				// Get next page of katas from API:
+				getCompletedKatas(username, page+1);
+			}
 		});
 }
 
+// Fetch a kata's details from localStorage or CW API:
 function getKataDetails(id) {
 	// Retrieve the kata only if we don't have it stored:
-	if (!localStorage.getItem(id)) {
+	if (typeof id !== 'undefined' && !localStorage.getItem(id)) {
 		// API call:
 		var url = baseUrl + "/code-challenges/" + id;
 		return axios.get(url)
@@ -101,6 +122,7 @@ function getKataDetails(id) {
 	}
 	else return JSON.parse(localStorage.getItem(id));	// NOT A PROMISE, BUT DOESN'T MATTER
 }
+
 
 /* FILL USER PROFILE */
 
@@ -143,8 +165,10 @@ function renderRankPill(rank) {
 	//	</div>
 }
 
+
 /* DRAW CALENDAR */
 
+// Generate an empty calendar for 52 weeks back from today:
 function generateCalendar(target) {
 	var today = moment().endOf("day");
 	// Find next Sunday:
@@ -169,18 +193,37 @@ function generateCalendar(target) {
 	}
 
 	// Loading animation:
+	runCalendarLoadingAnim();
 	$(target).addClass("loading");
 }
 
+// Empty out all calendar cells:
 function clearCalendar() {
-	$("#calendar .day").removeClass("tt").css("opacity", 1);
+	$("#calendar .day").removeClass("tt flash-once").css("opacity", 1);
 	for (var lang of Object.keys(user.languageCounts)) {
 		$("#calendar .day").removeClass(lang);
 	}
 }
 
+// Start calendar flicker animation:
+function runCalendarLoadingAnim() {
+	window.loadingLoop = setTimeout(function() {
+		var $randomDay = $("#calendar .day").random();
+		//console.log($randomDay.data('date'));
+		$randomDay.addClass("flash-once");
+		runCalendarLoadingAnim();
+	}, 200);
+}
+
+// Stop calendar flicker animation:
+function stopCalendarLoadingAnim() {
+	clearTimeout(window.loadingLoop);
+}
+
+
 /* FILL CALENDAR */
 
+// Fill the calendar with a filtered set of katas:
 function renderKatas(katas, filter = "") {
 	if (filter.length > 0) {
 		katas = katas.filter(kata => kata.completedLanguages.indexOf(filter) !== -1);
@@ -199,8 +242,10 @@ function renderKatas(katas, filter = "") {
 	createCalendarTooltips();
 }
 
+
 /* CALENDAR DAY */
 
+// Render one calendar day's content:
 function styleDay(date, dateKatas) {
 	// Element to style:
 	var $div = $(".day[data-date="+date+"]");
@@ -223,6 +268,7 @@ function styleDay(date, dateKatas) {
 	drawPieOnCanvas(counts, date);
 }
 
+// Make a small canvas element:
 function createCanvas(id) {
 	var $canvas = $("<canvas>")
 		.attr("id", "canvas"+id)
@@ -231,6 +277,7 @@ function createCanvas(id) {
 	return $canvas;
 }
 
+// Draw a square pie chart of day's katas:
 function drawPieOnCanvas(data, date) {
 	// Sum the values to find out 100% of this pie chart:
 	var dataSum = Object.values(data).reduce(function(acc, val) {
@@ -239,6 +286,7 @@ function drawPieOnCanvas(data, date) {
 
 	// Select a tiny canvas:
 	var canvas = document.querySelector('#canvas'+date);
+	if (!canvas) return;
 	var ctx = canvas.getContext('2d'),
 		canvasCenterVert = canvas.height / 2,
 		canvasCenterHoriz = canvas.width / 2;
@@ -264,8 +312,10 @@ function drawPieOnCanvas(data, date) {
 	}
 }
 
+
 /* CALENDAR EXTRAS */
 
+// Prepare tooltips for filled calendar days
 function createCalendarTooltips() {
 	Tipped.create('.day', function() {
 		if (!$(this).hasClass('tt')) return '';
@@ -280,6 +330,7 @@ function createCalendarTooltips() {
 	);
 }
 
+// Fill a tooltip with kata names, ranks and languages:
 function makeTooltipContent(kataids) {
 	var $ul = $("<ul>").addClass("tt-katas");
 	for (var id of kataids) {
@@ -308,11 +359,13 @@ function makeTooltipContent(kataids) {
 	return $ul;
 }
 
+// Draw the svg icon for a rank:
 function makeRankPill(rank) {
 	if (!rank) rank = 'beta';
 	return "<svg><use xlink:href='img/rankpill.svg#" + rank.replace(' ','-') + "'></use></svg>";
 }
 
+// Draw the calendar languages legend:
 function makeLegend() {
 	for (var lang of Object.keys(user.languageCounts)) {
 		var count = user.languageCounts[lang];
@@ -327,10 +380,12 @@ function makeLegend() {
 	$(".legend").show();
 }
 
+
 /* LANG-RANKS */
 
 var ranks = ['Beta', '8 kyu', '7 kyu', '6 kyu', '5 kyu', '4 kyu', '3 kyu', '2 kyu', '1 kyu'];
 
+// Import mn113's languages-ranks data from local file:
 function getLangRankData() {
 	var langRankData = [];
 	// Read from local json file:
@@ -347,6 +402,7 @@ function getLangRankData() {
 	// Draw table:
 }
 
+// Build out <table> element for all required ranks & languages:
 function makeLangRankTable(data) {
 	var $headerRow = $("#th_langs");
 	for (var rank of ranks) {
@@ -363,6 +419,7 @@ function makeLangRankTable(data) {
 	fillLanguageRankTable(data);
 }
 
+// Fill <table> with numbers and opacify the cells:
 function fillLanguageRankTable(data) {
 	for (var kata of data) {
 		// Boost appropriate table cell:
@@ -380,13 +437,8 @@ function fillLanguageRankTable(data) {
 	});
 }
 
-/* UTILITY */
 
-function getKataRanks(katas) {
-	katas.forEach(function() {
-
-	});
-}
+// MAIN EXECUTION STARTS:
 
 function polyfillsAreLoaded() {
 	console.log('Polyfills loaded, beginning main function');
@@ -425,7 +477,7 @@ function polyfillsAreLoaded() {
 			// Depends on promise resolving:
 			cwUserPromise.then(cwUser => {
 				// Reload page:
-				//console.log(window.location.origin + window.location.pathname + '?user='  + cwUser.data.username);
+				console.log(window.location.origin + window.location.pathname + '?user='  + cwUser.data.username);
 				if (cwUser) window.location.href = window.location.origin + window.location.pathname + '?user=' + cwUser.username;
 				else $("h1 input").addClass("invalid");
 			});
@@ -442,6 +494,7 @@ function polyfillsAreLoaded() {
 			$(this).addClass("selected");
 		});
 
+		// Wait, then do langs-ranks work:
 		setTimeout(getLangRankData, 2000);
 
 	});
