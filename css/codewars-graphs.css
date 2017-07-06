@@ -130,21 +130,46 @@ section.week {
 	border: 1px dashed #999;
 	font-size: 1.2em;
 }
-.day.php   { background: mediumpurple; }
-.day.sql   { background: purple; }
 .day.ruby  { background: firebrick; }
-.day.python { background: limegreen; }
-.day.javascript { background: dodgerblue; }
+.day.swift   { background: tomato; }
+.day.java   { background: orange; }
+.day.javascript { background: yellow; }
+.day.clojure   { background: lawngreen; }
+.day.python { background: forestgreen; }
+.day.dart   { background: mediumaquamarine; }
+.day.cpp   { background: teal; }
+.day.go   { background: darkturquoise; }
+.day.typescript   { background: dodgerblue; }
+.day.fsharp   { background: steelblue; }
+.day.php   { background: mediumpurple; }
+.day.elixir   { background: blueviolet; }
+.day.sql   { background: purple; }
+.day.haskell   { background: purple; }
+.day.csharp   { background: fuchsia; }
+.day.crystal   { background: black; }
 
 
 /*********/
 /* ICONS */
 /*********/
 .php:before { color: mediumpurple; }
-.sql:before { color: purple; }
 .ruby:before { color: firebrick; }
-.python:before { color: limegreen; }
-.javascript:before { color: dodgerblue; }
+.swift:before { color: tomato; }
+.java:before { color: orange; }
+.javascript:before { color: yellow; }
+.clojure:before { color: lawngreen; }
+.python:before { color: forestgreen; }
+.dart:before { color: mediumaquamarine; }
+.cpp:before { color: teal; }
+.go:before { color: darkturquoise; }
+.typescript:before { color: dodgerblue; }
+.fsharp:before { color: steelblue; }
+.php:before { color: mediumpurple; }
+.elixir:before { color: blueviolet; }
+.sql:before { color: purple; }
+.haskell:before { color: purple; }
+.csharp:before { color: fuchsia; }
+.crystal:before { color: black; }
 
 
 /**********/

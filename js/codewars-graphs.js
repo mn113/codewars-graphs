@@ -20,19 +20,26 @@ function getUser(username) {
 	// Loading spinner:
 	$("#user-profile").addClass("loading");
 
-	var url = baseUrl + "/users/" + username;
-	return axios.get(url)
-		.then(function(resp) {
-			console.log("User response", resp);
-			// store fetched CodeWars user data on local user object:
-			user.details = resp.data;
-			renderUser(resp.data);
-			return resp;
-		})
-		.catch(function(err) {
-			console.log(err);
-			return false;
-		});
+	// Retrieve the kata only if we don't have it stored:
+	if (!localStorage.getItem(username)) {
+		// API call:
+		var url = baseUrl + "/users/" + username;
+		return axios.get(url)
+			.then(function(resp) {
+				console.log("User response", resp);
+				// store fetched CodeWars user data on local user object:
+				user.details = resp.data;
+				renderUser(resp.data);
+				// store user locally:
+				localStorage.setItem(username, JSON.stringify(resp.data));
+				return resp;
+			})
+			.catch(function(err) {
+				console.log(err);
+				return false;
+			});
+	}
+	else return Promise.resolve(JSON.parse(localStorage.getItem(username)));
 }
 
 function getCompletedKatas(username) {
@@ -43,8 +50,31 @@ function getCompletedKatas(username) {
 			user.languageCounts = _.countBy(resp.data.data, kata => kata.completedLanguages[0]);
 			$("#calendar").removeClass("loading");
 			renderKatas(user.completedKatas);
+			user.completedKatas.forEach(function(kata) {
+				getKataDetails(kata.id);
+			});
 			makeLegend();
 		});
+}
+
+function getKataDetails(id) {
+	// Retrieve the kata only if we don't have it stored:
+	if (!localStorage.getItem(id)) {
+		// API call:
+		var url = baseUrl + "/code-challenges/" + id;
+		return axios.get(url)
+			.then(function(resp) {
+				console.log("Kata response", resp);
+				// store id locally:
+				localStorage.setItem(id, JSON.stringify(resp.data));
+				return resp.data;
+			})
+			.catch(function(err) {
+				console.log(err);
+				return false;
+			});
+	}
+	else return JSON.parse(localStorage.getItem(id));	// NOT A PROMISE, BUT DOESN'T MATTER
 }
 
 /* FILL USER PROFILE */
@@ -67,7 +97,7 @@ function renderUser(details) {
 
 // Make a small coloured icon:
 function renderRankPill(rank) {
-	var colours = {
+	var pillColours = {
 		'Beta': 'grey',
 		'8 kyu': 'white',
 		'7 kyu': 'white',
@@ -78,7 +108,7 @@ function renderRankPill(rank) {
 		'2 kyu': 'purple',
 		'1 kyu': 'purple'
 	};
-	var $outerDiv = $("<div>").addClass("small-hex is-extra-wide is-invertable is-"+colours[rank]+"-rank");
+	var $outerDiv = $("<div>").addClass("small-hex is-extra-wide is-invertable is-"+pillColours[rank]+"-rank");
 	var $innerDiv = $("<div>").addClass("inner-small-hex is-extra-wide");
 	return $outerDiv.append($innerDiv.append($("<span>").html(rank)));
 	//	<div class="small-hex is-extra-wide is-invertable is-blue-rank">
@@ -183,7 +213,7 @@ function drawPieOnCanvas(data, date) {
 	}, 0);
 	//console.log("Total", dataSum, "katas");
 
-	var colours = {		// TODO: make global?
+	var langColours = {		// TODO: make global?
 		php: "mediumpurple",
 		ruby: "firebrick",
 		javascript: "dodgerblue",
@@ -205,7 +235,7 @@ function drawPieOnCanvas(data, date) {
 	for (var key of Object.keys(data)) {
 		var arc = 2 * Math.PI * data[key] / dataSum;
 		//console.log("Arc", key, "from", angle, "to", angle+arc);
-		drawPieSlice(canvasCenterHoriz, canvasCenterVert, radius, angle, angle+arc, false, colours[key]);
+		drawPieSlice(canvasCenterHoriz, canvasCenterVert, radius, angle, angle+arc, false, langColours[key]);
 		angle += arc;
 	}
 
@@ -321,6 +351,13 @@ function fillLanguageRankTable(data) {
 	});
 }
 
+/* UTILITY */
+
+function getKataRanks(katas) {
+	katas.forEach(function() {
+
+	});
+}
 
 function polyfillsAreLoaded() {
 	console.log('Polyfills loaded, beginning main function');
@@ -339,12 +376,13 @@ function polyfillsAreLoaded() {
 			console.log("User", cwUserPromise);
 			// Depends on promise resolving:
 			cwUserPromise.then(cwUser => {
+				console.log('cwUser', cwUser);
 				// Set title:
 				if (cwUser) {
-					$("h1 input").val(cwUser.data.username);
+					$("h1 input").val(cwUser.username);
 					$("h1 input").width($("h1 input").val().length * 20);
 					// Start fetching data for calendar:
-					getCompletedKatas(user.details.username);
+					getCompletedKatas(cwUser.username);
 				}
 			});
 		}
@@ -359,7 +397,7 @@ function polyfillsAreLoaded() {
 			cwUserPromise.then(cwUser => {
 				// Reload page:
 				//console.log(window.location.origin + window.location.pathname + '?user='  + cwUser.data.username);
-				if (cwUser) window.location.href = window.location.origin + window.location.pathname + '?user=' + cwUser.data.username;
+				if (cwUser) window.location.href = window.location.origin + window.location.pathname + '?user=' + cwUser.username;
 				else $("h1 input").addClass("invalid");
 			});
 		});
