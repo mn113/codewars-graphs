@@ -1,5 +1,25 @@
 /* global axios, $, moment, _, Opentip, Tipped, Tooltip */
 
+var langColours = {
+	ruby: "firebrick",
+	swift: "tomato",
+	java: "orange",
+	javascript: "yellow",
+	clojure: "lawngreen",
+	python: "forestgreen",
+	dart: "mediumaquamarine",
+	cpp: "teal",
+	go: "darkturquoise",
+	typescript: "dodgerblue",
+	fsharp: "steelblue",
+	php: "mediumpurple",
+	elixir: "blueviolet",
+	sql: "purple",
+	haskell: "purple",
+	csharp: "fuchsia",
+	crystal: "black"
+};
+
 var user = {
 	details: null,
 	username: "mn113",		// later need to scrape this from page
@@ -39,7 +59,12 @@ function getUser(username) {
 				return false;
 			});
 	}
-	else return Promise.resolve(JSON.parse(localStorage.getItem(username)));
+	else {
+		var userObj = JSON.parse(localStorage.getItem(username));
+		user.details = userObj;
+		renderUser(userObj);
+		return Promise.resolve(userObj);
+	}
 }
 
 function getCompletedKatas(username) {
@@ -211,15 +236,6 @@ function drawPieOnCanvas(data, date) {
 	var dataSum = Object.values(data).reduce(function(acc, val) {
 		return acc + val;
 	}, 0);
-	//console.log("Total", dataSum, "katas");
-
-	var langColours = {		// TODO: make global?
-		php: "mediumpurple",
-		ruby: "firebrick",
-		javascript: "dodgerblue",
-		python: "limegreen",
-		sql: "purple"
-	};
 
 	// Select a tiny canvas:
 	var canvas = document.querySelector('#canvas'+date);
@@ -269,7 +285,13 @@ function makeTooltipContent(kataids) {
 	for (var id of kataids) {
 		// Lookup id in big kata list:
 		var kata = _.find(user.completedKatas, (kata) => kata.id === id);
+		// Lookup id in localStorage to get rank:
+		var rank = JSON.parse(localStorage.getItem(id)).rank.name.replace(' ', '-');
+		// Build html:
 		var $li = $("<li>");
+		var $rank = $("<span>")
+			.addClass(rank)
+			.html(rank);
 		var $icon = $("<i>")
 			.addClass(kata.completedLanguages[0])
 			.addClass("icon-moon-"+kata.completedLanguages[0]);
@@ -277,6 +299,7 @@ function makeTooltipContent(kataids) {
 			.attr("href", "https://www.codewars.com/kata/"+kata.slug)
 			.attr("target", "_blank")
 			.html(kata.name);
+		$rank.appendTo($li);
 		$icon.appendTo($li);
 		$anchor.appendTo($li);
 		$li.appendTo($ul);
