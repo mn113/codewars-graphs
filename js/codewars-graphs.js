@@ -76,30 +76,49 @@ function getCompletedKatas(username, page) {
 	if (typeof page === 'undefined') page = 0;
 	if (typeof username === 'undefined') return;
 
-	var url = baseUrl + "/users/" + username + "/code-challenges/completed?page=" + page;
-	axios.get(url)
-		.then(function(resp) {
-			user.completedKatas = user.completedKatas.concat(resp.data.data);
-			// Do we have them all?
-			if (resp.data.data.length < 200) {
-				user.languageCounts = _.countBy(resp.data.data, kata => kata.completedLanguages[0]);
+	// Retrieve the page of katas only if we don't have it stored:
+	if (!localStorage.getItem(username+'-page'+page)) {
+		// API call:
+		var url = baseUrl + "/users/" + username + "/code-challenges/completed?page=" + page;
+		axios.get(url)
+			.then(function(resp) {
+				localStorage.setItem(username+'-page'+page, JSON.stringify(resp.data.data));
+				user.completedKatas = user.completedKatas.concat(resp.data.data);
+				handleFetchedKatas(resp.data.data, page, username);
+			});
+	}
+	else {
+		// Local fetch:
+		var localKatas = JSON.parse(localStorage.getItem(username+'-page'+page));
+		user.completedKatas = user.completedKatas.concat(localKatas);
+		handleFetchedKatas(localKatas, page, username);
+	}
+}
 
-				// Stop loading animation and start render:
-				stopCalendarLoadingAnim();
-				$("#calendar").removeClass("loading");
-				renderKatas(user.completedKatas);
+// Do stuff with the local- or API-fetched katas:
+function handleFetchedKatas(katas, page, username) {
+	var number = (200 * page) + katas.length;
+	$(".message").html(number+" katas fetched");
+	
+	// Do we have them all?
+	if (katas.length < 200) {
+		user.languageCounts = _.countBy(katas, kata => kata.completedLanguages[0]);
 
-				// Get individual kata details:
-				user.completedKatas.forEach(function(kata) {
-					getKataDetails(kata.id);
-				});
-				makeLegend();
-			}
-			else {
-				// Get next page of katas from API:
-				getCompletedKatas(username, page+1);
-			}
+		// Stop loading animation and start render:
+		stopCalendarLoadingAnim();
+		$(".message").remove();
+		renderKatas(user.completedKatas);
+
+		// Get individual kata details:
+		user.completedKatas.forEach(function(kata) {
+			getKataDetails(kata.id);
 		});
+		makeLegend();
+	}
+	else {
+		// Get next page of katas from API:
+		getCompletedKatas(username, page+1);
+	}
 }
 
 // Fetch a kata's details from localStorage or CW API:
@@ -194,7 +213,6 @@ function generateCalendar(target) {
 
 	// Loading animation:
 	runCalendarLoadingAnim();
-	$(target).addClass("loading");
 }
 
 // Empty out all calendar cells:
@@ -471,14 +489,15 @@ function polyfillsAreLoaded() {
 		// Reload page on username input:
 		$("h1 form").on("submit", function(e) {
 			e.preventDefault();
+			e.stopPropagation();
 			// Check validity by API request:
 			var cwUserPromise = getUser($("h1 input").val());
 			console.log("User", cwUserPromise);
 			// Depends on promise resolving:
 			cwUserPromise.then(cwUser => {
 				// Reload page:
-				console.log(window.location.origin + window.location.pathname + '?user='  + cwUser.data.username);
-				if (cwUser) window.location.href = window.location.origin + window.location.pathname + '?user=' + cwUser.username;
+				console.log(window.location.origin + window.location.pathname + '?user='  + cwUser.username);
+				if (cwUser) window.location = window.location.origin + window.location.pathname + '?user=' + cwUser.username;
 				else $("h1 input").addClass("invalid");
 			});
 		});
