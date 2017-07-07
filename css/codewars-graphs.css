@@ -62,11 +62,13 @@ h1 input.invalid {
 .face {
 	position: relative;
 	display: grid;
-	grid-template-columns: repeat(52, 0.75em); /* 1.5em */
+	grid-template-columns: repeat(104, 0.75em);
 	grid-gap: 2px;
 	border: 1px dotted #999;
 	padding: 1em 2px 2px 1.5em;
 	width: calc(52*0.75em + 104px);
+	overflow-x: scroll;
+	overflow-y: hidden;
 }
 
 section.week {
@@ -137,21 +139,26 @@ div.message {
 }
 .day.ruby  { background: firebrick; }
 .day.swift   { background: tomato; }
+.day.ocaml   { background: coral; }
 .day.java   { background: orange; }
 .day.javascript { background: yellow; }
 .day.clojure   { background: lawngreen; }
 .day.python { background: forestgreen; }
 .day.dart   { background: mediumaquamarine; }
-.day.cpp   { background: teal; }
+.day.cplusplus   { background: teal; }
 .day.go   { background: darkturquoise; }
 .day.typescript   { background: dodgerblue; }
 .day.fsharp   { background: steelblue; }
+.day.objc   { background: lightblue; }
+.day.c-lang   { background: blue; }
+.day.lua   { background: navy; }
 .day.php   { background: mediumpurple; }
 .day.elixir   { background: blueviolet; }
 .day.sql   { background: purple; }
 .day.haskell   { background: purple; }
 .day.csharp   { background: fuchsia; }
 .day.crystal   { background: black; }
+.day.bash   { background: black; }
 
 .day.flash-once {
 	animation: 0.6s flash-once 1;
@@ -165,24 +172,28 @@ div.message {
 /*********/
 /* ICONS */
 /*********/
-.php:before { color: mediumpurple; }
 .ruby:before { color: firebrick; }
 .swift:before { color: tomato; }
+.ocaml:before   { color: coral; }
 .java:before { color: orange; }
 .javascript:before { color: yellow; }
 .clojure:before { color: lawngreen; }
 .python:before { color: forestgreen; }
 .dart:before { color: mediumaquamarine; }
-.cpp:before { color: teal; }
+.cplusplus:before { color: teal; }
 .go:before { color: darkturquoise; }
 .typescript:before { color: dodgerblue; }
 .fsharp:before { color: steelblue; }
+.objc:before   { color: lightblue; }
+.c-lang:before   { color: blue; }
+.lua:before   { color: navy; }
 .php:before { color: mediumpurple; }
 .elixir:before { color: blueviolet; }
 .sql:before { color: purple; }
 .haskell:before { color: purple; }
 .csharp:before { color: fuchsia; }
 .crystal:before { color: black; }
+.bash:before   { color: black; }
 
 
 /**********/
@@ -199,11 +210,9 @@ ul.legend li i {
 }
 
 ul.legend {
+	float: right;
 	border: 1px dotted #999;
 	padding: 1em;
-	position: absolute;
-	top: 0;
-	right: -15em;
 	font-size: 0.85em;
 	display: none;
 }

@@ -98,8 +98,9 @@ function getCompletedKatas(username, page) {
 // Do stuff with the local- or API-fetched katas:
 function handleFetchedKatas(katas, page, username) {
 	var number = (200 * page) + katas.length;
+	console.log(number+" katas fetched");
 	$(".message").html(number+" katas fetched");
-	
+
 	// Do we have them all?
 	if (katas.length < 200) {
 		user.languageCounts = _.countBy(katas, kata => kata.completedLanguages[0]);
@@ -108,6 +109,8 @@ function handleFetchedKatas(katas, page, username) {
 		stopCalendarLoadingAnim();
 		$(".message").remove();
 		renderKatas(user.completedKatas);
+
+		cropCalendar();
 
 		// Get individual kata details:
 		user.completedKatas.forEach(function(kata) {
@@ -161,33 +164,10 @@ function renderUser(details) {
 	$userDiv.append($dl);
 }
 
-// Make a small coloured icon:
-function renderRankPill(rank) {
-	var pillColours = {
-		'Beta': 'grey',
-		'8 kyu': 'white',
-		'7 kyu': 'white',
-		'6 kyu': 'yellow',
-		'5 kyu': 'yellow',
-		'4 kyu': 'blue',
-		'3 kyu': 'blue',
-		'2 kyu': 'purple',
-		'1 kyu': 'purple'
-	};
-	var $outerDiv = $("<div>").addClass("small-hex is-extra-wide is-invertable is-"+pillColours[rank]+"-rank");
-	var $innerDiv = $("<div>").addClass("inner-small-hex is-extra-wide");
-	return $outerDiv.append($innerDiv.append($("<span>").html(rank)));
-	//	<div class="small-hex is-extra-wide is-invertable is-blue-rank">
-	//		<div class="inner-small-hex is-extra-wide ">
-	//			<span>3 kyu</span>
-	//		</div>
-	//	</div>
-}
-
 
 /* DRAW CALENDAR */
 
-// Generate an empty calendar for 52 weeks back from today:
+// Generate an empty calendar for 104 weeks back from today:
 function generateCalendar(target) {
 	var today = moment().endOf("day");
 	// Find next Sunday:
@@ -195,7 +175,7 @@ function generateCalendar(target) {
 	finalDay.endOf("week").add(1, "days");
 	// Subtract 52x7:
 	var currentDay = finalDay.clone();
-	currentDay.subtract(52, "weeks");
+	currentDay.subtract(104, "weeks");
 	// Create week section:
 	var $week = $("<section>").addClass("week");
 	// Start looping chronologically:
@@ -210,9 +190,20 @@ function generateCalendar(target) {
 		if (currentDay.weekday() === 6) $week.appendTo($(target));
 		currentDay.add(1, "days");
 	}
+	// Scroll to end:
+	document.getElementById('calendar').scrollLeft = 99999;
 
 	// Loading animation:
 	runCalendarLoadingAnim();
+}
+
+// Remove all weeks before earliest kata:
+function cropCalendar() {
+	while (!$(".week:first-child").find(".tt").length) {
+		$(".week:first-child").remove();
+		// Leave us with 52 weeks, even if blank:
+		if ($(".week").length <= 52) break;
+	}
 }
 
 // Empty out all calendar cells:
@@ -248,7 +239,7 @@ function renderKatas(katas, filter = "") {
 		$("canvas").hide();
 	}
 	else {
-		$("canvas").show();
+		$("canvas").show();	// BETTER TO HIDE ALL CANVASES & JUST USE OPACITY WHEN FILTERED TO A SINGLE LANG?
 	}
 	// Group by date:
 	var activeDates = _.countBy(katas, kata => kata.completedAt.substr(0,10));
@@ -257,6 +248,7 @@ function renderKatas(katas, filter = "") {
 		styleDay(date, katas.filter(kata => kata.completedAt.substr(0,10) === date));
 	}
 
+	// DO THIS AFTER EVERYTHING IS FETCHED
 	createCalendarTooltips();
 }
 
@@ -359,9 +351,8 @@ function makeTooltipContent(kataids) {
 		// Build html:
 		var $li = $("<li>");
 		$li.html(makeRankPill(rank));
-		//var $rank = $("<span>")
-		//	.addClass(rank)
-		//	.html(rank);
+		// Handle special case for icon display:
+		if (kata.completedLanguages[0] === 'shell') kata.completedLanguages[0] = 'bash';
 		var $icon = $("<i>")
 			.addClass(kata.completedLanguages[0])
 			.addClass("icon-moon-"+kata.completedLanguages[0]);
@@ -389,6 +380,8 @@ function makeLegend() {
 		var count = user.languageCounts[lang];
 		var $li = $("<li>")
 			.html(lang +" ("+ count +" katas)");
+		// Handle special case for icon display:
+		if (lang === 'shell') lang = 'bash';
 		var $icon = $("<i>")
 			.addClass(lang)
 			.addClass("icon-moon-"+lang);
@@ -496,9 +489,13 @@ function polyfillsAreLoaded() {
 			// Depends on promise resolving:
 			cwUserPromise.then(cwUser => {
 				// Reload page:
-				console.log(window.location.origin + window.location.pathname + '?user='  + cwUser.username);
-				if (cwUser) window.location = window.location.origin + window.location.pathname + '?user=' + cwUser.username;
-				else $("h1 input").addClass("invalid");
+				console.log(cwUser);
+				if (cwUser && cwUser.username) {
+					window.location.href = window.location.origin + window.location.pathname + '?user=' + cwUser.username;
+				}
+				else {
+					$("h1 input").addClass("invalid");
+				}
 			});
 		});
 
