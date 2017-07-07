@@ -97,29 +97,41 @@ function getCompletedKatas(username, page) {
 
 // Do stuff with the local- or API-fetched katas:
 function handleFetchedKatas(katas, page, username) {
+	// Always keep progress message up-to-date:
 	var number = (200 * page) + katas.length;
 	console.log(number+" katas fetched");
 	$(".message").html(number+" katas fetched");
 
+	// When first page loads, stop loading animation and start render:
+	if (page === 0) stopCalendarLoadingAnim();
+
 	// Do we have them all?
 	if (katas.length < 200) {
+		// Render final katas:
+		console.log("Rendering final page", page);
+		renderKatas(katas, "", true);
+
+		setTimeout(function() {
+			$(".message").remove();
+			console.log("Cropping");
+			cropCalendar();		// I HOPE THEY ARE ALL RENDERED BEFORE CROP...
+		}, 750);
+
+		// Count katas per language:
 		user.languageCounts = _.countBy(katas, kata => kata.completedLanguages[0]);
-
-		// Stop loading animation and start render:
-		stopCalendarLoadingAnim();
-		$(".message").remove();
-		renderKatas(user.completedKatas);
-
-		cropCalendar();
 
 		// Get individual kata details:
 		user.completedKatas.forEach(function(kata) {
 			getKataDetails(kata.id);
 		});
+
 		makeLegend();
 	}
 	else {
-		// Get next page of katas from API:
+		// Render latest katas:
+		console.log("Rendering page", page);
+		renderKatas(katas, "", false);
+		// Fetch next page of katas from API:
 		getCompletedKatas(username, page+1);
 	}
 }
@@ -173,15 +185,17 @@ function generateCalendar(target) {
 	// Find next Sunday:
 	var finalDay = today.clone();
 	finalDay.endOf("week").add(1, "days");
-	// Subtract 52x7:
+	// Subtract 2x52x7:
 	var currentDay = finalDay.clone();
 	currentDay.subtract(104, "weeks");
 	// Create week section:
 	var $week = $("<section>").addClass("week");
 	// Start looping chronologically:
 	while (currentDay.isBefore(finalDay)) {
-		if (currentDay.date() === 1) $week.addClass(currentDay.format('MMM'));
+		// Start new week on Sunday:
 		if (currentDay.weekday() === 0) $week = $("<section>").addClass("week");
+		if (currentDay.date() === 1) $week.addClass(currentDay.format('MMM'));			// First week gets month heading
+		if (currentDay.date() === 1 && currentDay.month() === 0) $week.addClass('year'+currentDay.format('YY'));	// January gets extra year heading
 		// Create day div:
 		var $div = $("<div>").addClass("day").attr("data-date", currentDay.format("YYYY-MM-DD"));
 		// Mark today with x:
@@ -233,7 +247,7 @@ function stopCalendarLoadingAnim() {
 /* FILL CALENDAR */
 
 // Fill the calendar with a filtered set of katas:
-function renderKatas(katas, filter = "") {
+function renderKatas(katas, filter = "", isFinal = false) {
 	if (filter.length > 0) {
 		katas = katas.filter(kata => kata.completedLanguages.indexOf(filter) !== -1);
 		$("canvas").hide();
@@ -244,12 +258,13 @@ function renderKatas(katas, filter = "") {
 	// Group by date:
 	var activeDates = _.countBy(katas, kata => kata.completedAt.substr(0,10));
 	// Apply data to calendar day-by-day:
+	console.log("About to style days...");
 	for (var date of Object.keys(activeDates)) {
 		styleDay(date, katas.filter(kata => kata.completedAt.substr(0,10) === date));
 	}
 
 	// DO THIS AFTER EVERYTHING IS FETCHED
-	createCalendarTooltips();
+	if (isFinal) createCalendarTooltips();
 }
 
 
@@ -465,7 +480,7 @@ function polyfillsAreLoaded() {
 		if (urlParams.get('user')) {
 			// Check validity by API request:
 			var cwUserPromise = getUser(urlParams.get('user'));
-			console.log("User", cwUserPromise);
+			//console.log("User", cwUserPromise);
 			// Depends on promise resolving:
 			cwUserPromise.then(cwUser => {
 				console.log('cwUser', cwUser);

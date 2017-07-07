@@ -106,6 +106,23 @@ div.message {
 .Dec:before { content: 'Dec'; }
 
 
+/*******************/
+/* HEADINGS - YEAR */
+/*******************/
+.week:after {
+	font-size: 0.6em;
+	line-height: 0.8em;
+	position: absolute;
+	top: 0.3em;
+	left: 2em;
+}
+.year18:after { content: '18'; }
+.year17:after { content: '17'; }
+.year16:after { content: '16'; }
+.year15:after { content: '15'; }
+.year14:after { content: '14'; }
+
+
 /**********************/
 /* HEADINGS - WEEKDAY */
 /**********************/
