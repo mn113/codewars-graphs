@@ -77,9 +77,7 @@ section.week {
 	grid-gap: 2px;
 }
 div.message {
-	position: absolute;
-    top: 50%;
-    left: calc(50% - 3em);
+	float: right;
 }
 
 

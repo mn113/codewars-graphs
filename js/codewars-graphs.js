@@ -107,18 +107,18 @@ function handleFetchedKatas(katas, page, username) {
 
 	// Do we have them all?
 	if (katas.length < 200) {
-		// Render final katas:
+		// Count katas per language, for ALL user's katas:
+		user.languageCounts = _.countBy(user.completedKatas, kata => kata.completedLanguages[0]);
+
+		// Render final page of katas:
 		console.log("Rendering final page", page);
 		renderKatas(katas, "", true);
 
+		// Remove blank weeks from calendar start:
 		setTimeout(function() {
-			$(".message").remove();
 			console.log("Cropping");
 			cropCalendar();		// I HOPE THEY ARE ALL RENDERED BEFORE CROP...
 		}, 750);
-
-		// Count katas per language:
-		user.languageCounts = _.countBy(katas, kata => kata.completedLanguages[0]);
 
 		// Get individual kata details:
 		user.completedKatas.forEach(function(kata) {
@@ -126,6 +126,7 @@ function handleFetchedKatas(katas, page, username) {
 		});
 
 		makeLegend();
+		makeLangRankTable();
 	}
 	else {
 		// Render latest katas:
@@ -145,6 +146,8 @@ function getKataDetails(id) {
 		return axios.get(url)
 			.then(function(resp) {
 				console.log("Kata response", resp);
+				// Strip long description:
+				if (resp.data.description) resp.data.description = '';
 				// store id locally:
 				localStorage.setItem(id, JSON.stringify(resp.data));
 				return resp.data;
@@ -264,7 +267,9 @@ function renderKatas(katas, filter = "", isFinal = false) {
 	}
 
 	// DO THIS AFTER EVERYTHING IS FETCHED
-	if (isFinal) createCalendarTooltips();
+	if (isFinal) {
+		createCalendarTooltips();
+	}
 }
 
 
@@ -412,6 +417,7 @@ function makeLegend() {
 var ranks = ['Beta', '8 kyu', '7 kyu', '6 kyu', '5 kyu', '4 kyu', '3 kyu', '2 kyu', '1 kyu'];
 
 // Import mn113's languages-ranks data from local file:
+/*
 function getLangRankData() {
 	var langRankData = [];
 	// Read from local json file:
@@ -427,38 +433,47 @@ function getLangRankData() {
 	});
 	// Draw table:
 }
+*/
 
 // Build out <table> element for all required ranks & languages:
-function makeLangRankTable(data) {
+function makeLangRankTable() {
+	console.log("makeLRT", user.languageCounts, Object.keys(user.languageCounts));
 	var $headerRow = $("#th_langs");
+	// Make a row of column headings first:
+	for (var lang of Object.keys(user.languageCounts)) {
+		console.log(lang);
+		$headerRow.append($("<th>").html(lang));
+	}
+	// Make a row for each rank:
 	for (var rank of ranks) {
-		// Make a table row with row heading:
 		var $tr = $("<tr>").html($("<th>").html(rank));
 		for (var lang of Object.keys(user.languageCounts)) {
-			// Make a column heading:
-			if (rank === 'Beta') $headerRow.append($("<th>").html(lang));
 			// Make the empty table cell:
 			$tr.append($("<td>").html('0'));
 		}
 		$("#langRankTable").append($tr);
 	}
-	fillLanguageRankTable(data);
+	fillLanguageRankTable();
 }
 
 // Fill <table> with numbers and opacify the cells:
-function fillLanguageRankTable(data) {
-	for (var kata of data) {
+function fillLanguageRankTable() {
+	console.log("fillLRT", user.languageCounts);
+	for (var kata of user.completedKatas) {
+		var kataDetail = getKataDetails(kata.id);
+		if (!kataDetail) continue;
+		if (kataDetail.rank.name === null) kataDetail.rank.name = 'Beta';
 		// Boost appropriate table cell:
-		var x = Object.keys(user.languageCounts).indexOf(kata.lang.toLowerCase());
-		var y = ranks.indexOf(kata.rank);
+		var x = Object.keys(user.languageCounts).indexOf(kata.completedLanguages[0].toLowerCase());	// only consider one lang per kata
+		var y = ranks.indexOf(kataDetail.rank.name);
 		var $td = $("#langRankTable").find("tr:nth-child("+(y+2)+")").find("td:nth-child("+(x+2)+")");
-		// Increment cell:
+		// Increment cell's number:
 		$td.html(parseInt($td.html()) + 1);
 	}
 	// Colour cells:
 	$("td").each(function() {
 		$(this).css({
-			background: 'rgba(180,0,255,'+ 0.03 * parseInt($(this).html()) +')'
+			background: 'rgba(180,0,255,'+ 0.03 * parseInt($(this).html()) +')'	// NEEDS MORE SOPHISTICATION
 		});
 	});
 }
@@ -526,7 +541,7 @@ function polyfillsAreLoaded() {
 		});
 
 		// Wait, then do langs-ranks work:
-		setTimeout(getLangRankData, 2000);
+		//setTimeout(makeLangRankTable, 2000);
 
 	});
 }
