@@ -114,32 +114,28 @@ div.message {
 	line-height: 0.8em;
 	position: absolute;
 	top: 0.3em;
-	left: 2em;
+	padding-left: 3em;
 }
-.year18:after { content: '18'; }
-.year17:after { content: '17'; }
-.year16:after { content: '16'; }
-.year15:after { content: '15'; }
-.year14:after { content: '14'; }
+.year18:after { content: '2018'; }
+.year17:after { content: '2017'; }
+.year16:after { content: '2016'; }
+.year15:after { content: '2015'; }
+.year14:after { content: '2014'; }
 
 
 /**********************/
 /* HEADINGS - WEEKDAY */
 /**********************/
-.week:first-of-type > div:before {
+#calendar:before {
+	content: "Sun\A Mon\A Tue\A Wed\A Thu\A Fri\A Sat";
+	white-space: pre;
 	font-size: 0.6em;
-	line-height: 1.2em;
-	text-align: right;
-	position: absolute;
-	left: 0;
+	line-height: 1.5em;
+    text-align: right;
+    position: absolute;
+    left: 0;
+    top: 1.6em;
 }
-.week:first-of-type > div:nth-child(1):before { content: 'Sun'; }
-.week:first-of-type > div:nth-child(2):before { content: 'Mon'; }
-.week:first-of-type > div:nth-child(3):before { content: 'Tue'; }
-.week:first-of-type > div:nth-child(4):before { content: 'Wed'; }
-.week:first-of-type > div:nth-child(5):before { content: 'Thu'; }
-.week:first-of-type > div:nth-child(6):before { content: 'Fri'; }
-.week:first-of-type > div:nth-child(7):before { content: 'Sat'; }
 
 
 /********/
