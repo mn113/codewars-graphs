@@ -22,7 +22,6 @@ var langColours = {
 
 var user = {
 	details: null,
-	username: "mn113",		// later need to scrape this from page
 	completedKatas: [],
 	authoredKatas: [],
 	languageCounts: {}
@@ -182,7 +181,7 @@ function renderUser(details) {
 
 /* DRAW CALENDAR */
 
-// Generate an empty calendar for 104 weeks back from today:
+// Generate an empty calendar for 208 weeks back from today:
 function generateCalendar(target) {
 	var today = moment().endOf("day");
 	// Find next Sunday:
@@ -190,7 +189,7 @@ function generateCalendar(target) {
 	finalDay.endOf("week").add(1, "days");
 	// Subtract 2x52x7:
 	var currentDay = finalDay.clone();
-	currentDay.subtract(104, "weeks");
+	currentDay.subtract(208, "weeks");
 	// Create week section:
 	var $week = $("<section>").addClass("week");
 	// Start looping chronologically:
@@ -462,7 +461,7 @@ function fillLanguageRankTable() {
 	for (var kata of user.completedKatas) {
 		var kataDetail = getKataDetails(kata.id);
 		if (!kataDetail) continue;
-		if (kataDetail.rank.name === null) kataDetail.rank.name = 'Beta';
+		else if (kataDetail.rank && kataDetail.rank.name === null) kataDetail.rank.name = 'Beta';
 		// Boost appropriate table cell:
 		var x = Object.keys(user.languageCounts).indexOf(kata.completedLanguages[0].toLowerCase());	// only consider one lang per kata
 		var y = ranks.indexOf(kataDetail.rank.name);
@@ -470,10 +469,19 @@ function fillLanguageRankTable() {
 		// Increment cell's number:
 		$td.html(parseInt($td.html()) + 1);
 	}
-	// Colour cells:
+
+	// Find max cell value:
+	var maxValue = _.chain($("#langRankTable td"))
+					.map(td => parseInt($(td).html()))
+					.max()
+					.value();
+
+	console.log(maxValue+" maximum");
+
+	// Colour cells using opacity:
 	$("td").each(function() {
 		$(this).css({
-			background: 'rgba(180,0,255,'+ 0.03 * parseInt($(this).html()) +')'	// NEEDS MORE SOPHISTICATION
+			background: 'rgba(200,0,255,'+ parseInt($(this).html()) / maxValue +')'
 		});
 	});
 }
