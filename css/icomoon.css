@@ -427,10 +427,12 @@ i[class^="icon-moon-"] {
     content: "\e611"
 }
 
+.icon-moon-c:before,
 .icon-moon-c-lang:before {
     content: "\e612"
 }
 
+.icon-moon-cpp:before,
 .icon-moon-cplusplus:before {
     content: "\e613"
 }
@@ -591,6 +593,7 @@ i[class^="icon-moon-"] {
     content: "\e63b"
 }
 
+.icon-moon-shell:before,
 .icon-moon-bash:before {
     content: "\e63c"
 }

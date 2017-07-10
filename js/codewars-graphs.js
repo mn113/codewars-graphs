@@ -8,16 +8,16 @@ var langColours = {
 	ocaml:  "coral",
 	java:  "orange",
 	javascript: "yellow",
-	bash:  "olive",
+	shell:  "olive",			// bash
 	clojure:  "lawngreen",
 	python: "forestgreen",
 	dart:  "mediumaquamarine",
-	cplusplus:  "teal",
+	cpp:  "teal",		// cplusplus
 	go:  "darkturquoise",
 	typescript:  "dodgerblue",
 	fsharp:  "steelblue",
 	objc:  "lightblue",
-	'c-lang':  "blue",
+	c:  "blue",	// c-lang
 	lua:  "navy",
 	php:  "mediumpurple",
 	elixir:  "blueviolet",
@@ -400,6 +400,7 @@ function drawPieOnCanvas(data, date) {
 /* CALENDAR EXTRAS */
 
 // Utility function to fix bad language names:
+/*
 function amendLangNames(lang) {
 	// Handle special cases for icon display:
 	if (lang === 'shell') lang = 'bash';
@@ -407,6 +408,7 @@ function amendLangNames(lang) {
 	if (lang === 'c') lang = 'c-lang';
 	return lang;
 }
+*/
 
 // Prepare tooltips for filled calendar days
 function createCalendarTooltips() {
@@ -437,7 +439,6 @@ function makeTooltipContent(kataids) {
 		// Concatenate lang icons:
 		var $icons = $("<span>");
 		for (var lang of kata.completedLanguages) {
-			lang = amendLangNames(lang);
 			// Add multiple language classes to li:
 			$li.addClass(lang);
 			var $icon = $("<i>")
@@ -466,7 +467,6 @@ function makeRankPill(rank) {
 // Draw the calendar languages legend:
 function makeLegend() {
 	for (var lang of Object.keys(user.languageCounts)) {
-		lang = amendLangNames(lang);
 		var count = user.languageCounts[lang];
 		var $li = $("<li>")
 			.html(lang +" ("+ count +" katas)");
@@ -488,7 +488,6 @@ function makeLangRankTable() {
 	var $headerRow = $("#th_langs");
 	// Make a row of column headings first:
 	for (var lang of Object.keys(user.languageCounts)) {
-		lang = amendLangNames(lang);
 		$headerRow.append($("<th>").html(lang));
 	}
 	// Make a row for each rank:
