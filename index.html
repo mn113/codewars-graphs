@@ -19,39 +19,44 @@
 	</svg>
 </head>
 <body>
-	<h1>CodeWars activity for user
-		<form>
-			<input type="text" id="username" value=""><button>Update</button>
-		</form>
-	</h1>
+	<header>
+		<h1>Activity for CodeWars user
+			<form>
+				<input type="text" id="username" value=""><button>Update</button>
+			</form>
+		</h1>
+		<div class="message"></div>
+	</header>
 
-	<div id="user-profile"></div>
+	<main>
+		<section id="calStuff" class="cf">
+			<ul id="language-filter">Showing:
+				<li data-filter="" class="selected">All</li>
+			</ul>
+			<div id="calendar"></div>
+			<ul id="legend"><h2>Legend</h2></ul>
+		</section>
 
-	<div class="message"></div>
+		<section id="langRanks">
+			<h2>Completed katas by language/rank</h2>
+			<table id="langRankTable">
+				<tr id="th_langs">
+					<th>&times;</th>
+					<!-- generate more th's based on languages used -->
+				</tr>
+			</table>
+		</section>
 
-	<ul id="language-filter">Showing:
-		<li data-filter="" class="selected">All</li>
-	</ul>
+		<section id="submissionTimes" style="display: none;">
+			<h2>Kata completion times</h2>
+			<canvas width="450" height="450"></canvas>
+		</section>
+	</main>
 
-	<div id="calendar"></div>
-	<ul id="legend"><h2>Legend</h2></ul>
-
-	<a href="spinner.html">4-sided version</a>
-
-	<hr>
-
-	<h2>Completed katas by language/rank</h2>
-	<table id="langRankTable">
-		<tr id="th_langs">
-			<th>&times;</th>
-			<!-- generate more th's based on languages used -->
-		</tr>
-	</table>
-
-	<div id="submissionTimes">
-		<h2>Kata completion times</h2>
-		<canvas width="450" height="450"></canvas>
-	</div>
+	<aside>
+		<section id="user-profile">
+		</section>
+	</aside>
 
 	<script src="https://cdn.jsdelivr.net/axios/0.16.1/axios.min.js"></script>
 	<script src="https://cdn.jsdelivr.net/momentjs/2.18.1/moment.min.js"></script>

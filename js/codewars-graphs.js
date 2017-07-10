@@ -110,11 +110,7 @@ function getKatas(username, page = 0) {
 function handleFetchedKatas(katas, page, username) {
 	// Always keep progress message up-to-date:
 	var number = (200 * page) + katas.length;
-	console.log(number+" katas fetched");
-	$(".message").html(number+" katas fetched");
-
-	// When first page loads, stop loading animation and start render:
-	//if (page === 0) stopCalendarLoadingAnim();
+	$(".message").html(number+" of "+user.details.codeChallenges.totalCompleted+" user katas fetched.");
 
 	// Do we have them all?
 	if (katas.length < 200) {
@@ -187,7 +183,7 @@ function renderUser(details) {
 	var $dl = $("<dl>");
 	var languages = Object.keys(details.ranks.languages);
 	$dl.append("<dt>Honor</dt><dd>"+details.honor+' points</dd>');
-	$dl.append("<dt>Leaderboard</dt><dd>"+details.leaderboardPosition+'</dd>');
+	$dl.append("<dt>Leaderboard</dt><dd>#"+details.leaderboardPosition+'</dd>');
 	$dl.append("<dt>Completed kata</dt><dd>"+details.codeChallenges.totalCompleted+"</dd>");
 	$dl.append("<dt>Authored kata</dt><dd>"+details.codeChallenges.totalAuthored+"</dd>");
 	$dl.append("<dt>Languages</dt><dd>"+languages.join(", ")+"</dd>");
@@ -285,6 +281,7 @@ function renderKatas(katas, filter = "", isFinal = false, newCanvas = true) {		/
 
 	// Post-finalblock-render operations:
 	if (isFinal) {
+		$(".message").addClass("success");
 		stopCalendarLoadingAnim();
 		makeFilters();
 		createCalendarTooltips();
@@ -462,7 +459,7 @@ function makeTooltipContent(kataids) {
 // Draw the svg icon for a rank:
 function makeRankPill(rank) {
 	if (!rank) rank = 'beta';
-	return "<svg><use xlink:href='img/rankpill.svg#" + rank.replace(' ','-') + "'></use></svg>";
+	return "<svg class='pill'><use xlink:href='img/rankpill.svg#" + rank.replace(' ','-') + "'></use></svg>";
 }
 
 // Draw the calendar languages legend:
