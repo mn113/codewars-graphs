@@ -1,23 +1,29 @@
-/* global axios, $, moment, _, Opentip, Tipped, Tooltip */
+/* global axios, $, moment, _, Tipped */
 
 var langColours = {
+	coffeescript: "saddlebrown",
 	ruby: "firebrick",
-	swift: "tomato",
-	java: "orange",
+	crystal:  "indianred",
+	swift:  "tomato",
+	ocaml:  "coral",
+	java:  "orange",
 	javascript: "yellow",
-	clojure: "lawngreen",
+	bash:  "olive",
+	clojure:  "lawngreen",
 	python: "forestgreen",
-	dart: "mediumaquamarine",
-	cpp: "teal",
-	go: "darkturquoise",
-	typescript: "dodgerblue",
-	fsharp: "steelblue",
-	php: "mediumpurple",
-	elixir: "blueviolet",
-	sql: "purple",
-	haskell: "purple",
-	csharp: "fuchsia",
-	crystal: "black"
+	dart:  "mediumaquamarine",
+	cplusplus:  "teal",
+	go:  "darkturquoise",
+	typescript:  "dodgerblue",
+	fsharp:  "steelblue",
+	objc:  "lightblue",
+	'c-lang':  "blue",
+	lua:  "navy",
+	php:  "mediumpurple",
+	elixir:  "blueviolet",
+	sql:  "purple",
+	haskell:  "purple",
+	csharp:  "fuchsia"
 };
 
 var ranks = ['Beta', '8 kyu', '7 kyu', '6 kyu', '5 kyu', '4 kyu', '3 kyu', '2 kyu', '1 kyu'];
@@ -113,7 +119,10 @@ function handleFetchedKatas(katas, page, username) {
 	// Do we have them all?
 	if (katas.length < 200) {
 		// Count katas per language, for ALL user's katas:
-		user.languageCounts = _.countBy(user.completedKatas, kata => kata.completedLanguages[0]);
+		var langs = _.flatten(_.map(user.completedKatas, kata => kata.completedLanguages));
+		user.languageCounts = _.countBy(langs);
+		console.log(user.languageCounts);
+		//user.languageCounts = _.countBy(user.completedKatas, kata => kata.completedLanguages[0]);
 
 		// Render final page of katas:
 		console.log("Rendering final page", page);
@@ -256,24 +265,25 @@ function stopCalendarLoadingAnim() {
 /* FILL CALENDAR */
 
 // Fill the calendar with a filtered set of katas:
-function renderKatas(katas, filter = "", isFinal = false) {		// ES6 default prop (polyfilled)
-	if (filter.length === 0) {
-		// Show all pies when filtering to all:
-		$("canvas").show();
-	}
-	else {
+function renderKatas(katas, filter = "", isFinal = false, newCanvas = true) {		// ES6 default prop (polyfilled)
+	// Filter katas:
+	if (filter.length > 0) {
 		katas = katas.filter(kata => kata.completedLanguages.indexOf(filter) !== -1);
-		$("canvas").hide();
 	}
+
 	// Group by date:
 	var activeDates = _.countBy(katas, kata => kata.completedAt.substr(0,10));
 	// Apply data to calendar day-by-day:
 	console.log("About to style days...");
 	for (var date of Object.keys(activeDates)) {
-		styleDay(date, katas.filter(kata => kata.completedAt.substr(0,10) === date), filter);
+		styleDay(date, katas.filter(kata => kata.completedAt.substr(0,10) === date), filter, newCanvas);
 	}
 
-	// DO THIS AFTER EVERYTHING IS FETCHED
+	// Hide all pies when filtering to specific language, show all when all:
+	if (filter.length > 0) $("#calendar canvas").hide();
+	else $("#calendar canvas").show();
+
+	// Post-finalblock-render operations:
 	if (isFinal) {
 		stopCalendarLoadingAnim();
 		makeFilters();
@@ -303,36 +313,43 @@ function filterTooltips(filter) {
 /* CALENDAR DAY */
 
 // Render one calendar day's content:
-function styleDay(date, dateKatas, filter) {
-	// Element to style:
+function styleDay(date, dateKatas, filter = '', newCanvas = true) {
+	// Get element to style:
 	var $div = $(".day[data-date="+date+"]");
 
-	// Style based on quantity:
-	$div.css({
-		opacity: dateKatas.length * 0.2
-	});
+	// Remove all language classes:
+	$div.removeClass().addClass('day');
 
-	// Extract ids, stringify & store as data-kataids:
-	var kataids = dateKatas.map(kata => kata.id);
-	$div.data("kataids", kataids.join(","));
-	// Group by language:
-	var langs = dateKatas.map(kata => kata.completedLanguages[0]);
-	var counts = _.countBy(langs);
+	// Group input katas by language:
+	var langs = _.flatten(dateKatas.map(kata => kata.completedLanguages));
+	var dayCounts = _.countBy(langs);
 
 	// Decide on day's background colour:
 	if (filter.length === 0) {
-		// Style based on top language:
-		var topLang = _.maxBy(Object.keys(counts), value => counts[value]);
+		// Style based on top language (as fallback in case of no canvas):
+		var topLang = _.maxBy(Object.keys(dayCounts), value => dayCounts[value]);
 		$div.addClass(topLang);
 	} else {
+		// Style as per filtering language:
 		$div.addClass(filter);
 	}
+
+	// Style background based on kata quantity:
+	$div.css({opacity: dateKatas.length * 0.2});
+
 	// Attach tooltips:
 	$div.addClass('tt');
 
-	// Insert a small pie chart canvas:
-	$div.html(createCanvas(date));
-	drawPieOnCanvas(counts, date);
+	// First time it renders:
+	if (newCanvas) {
+		// Extract ids, stringify & store as data-kataids:
+		var kataids = dateKatas.map(kata => kata.id);
+		$div.data("kataids", kataids.join(","));
+
+		// Insert a small pie chart canvas:
+		$div.html(createCanvas(date));
+		drawPieOnCanvas(dayCounts, date);
+	}
 }
 
 // Make a small canvas element:
@@ -382,6 +399,15 @@ function drawPieOnCanvas(data, date) {
 
 /* CALENDAR EXTRAS */
 
+// Utility function to fix bad language names:
+function amendLangNames(lang) {
+	// Handle special cases for icon display:
+	if (lang === 'shell') lang = 'bash';
+	if (lang === 'cpp') lang = 'cplusplus';
+	if (lang === 'c') lang = 'c-lang';
+	return lang;
+}
+
 // Prepare tooltips for filled calendar days
 function createCalendarTooltips() {
 	Tipped.create('.day', function() {
@@ -408,21 +434,23 @@ function makeTooltipContent(kataids) {
 		var $li = $("<li>");
 		// Show rank pill:
 		$li.html(makeRankPill(rank));
-		// Show lang icon:
-		var lang = kata.completedLanguages[0];
-		// Handle special cases for icon display:
-		if (lang === 'shell') lang = 'bash';
-		if (lang === 'cpp') lang = 'cplusplus';
-		$li.addClass(lang);
-		var $icon = $("<i>")
-			.addClass(lang)
-			.addClass("icon-moon-"+lang);
+		// Concatenate lang icons:
+		var $icons = $("<span>");
+		for (var lang of kata.completedLanguages) {
+			lang = amendLangNames(lang);
+			// Add multiple language classes to li:
+			$li.addClass(lang);
+			var $icon = $("<i>")
+				.addClass(lang)
+				.addClass("icon-moon-"+lang);
+			$icon.appendTo($icons);
+		}
 		// Add link:
 		var $anchor = $("<a>")
 			.attr("href", "https://www.codewars.com/kata/"+kata.slug)
 			.attr("target", "_blank")
 			.html(kata.name);
-		$icon.appendTo($li);
+		$icons.appendTo($li);
 		$anchor.appendTo($li);
 		$li.appendTo($ul);
 	}
@@ -438,19 +466,17 @@ function makeRankPill(rank) {
 // Draw the calendar languages legend:
 function makeLegend() {
 	for (var lang of Object.keys(user.languageCounts)) {
+		lang = amendLangNames(lang);
 		var count = user.languageCounts[lang];
 		var $li = $("<li>")
 			.html(lang +" ("+ count +" katas)");
-		// Handle special cases for icon display:
-		if (lang === 'shell') lang = 'bash';
-		if (lang === 'cpp') lang = 'cplusplus';
 		var $icon = $("<i>")
 			.addClass(lang)
 			.addClass("icon-moon-"+lang);
 		$icon.prependTo($li);
-		$li.appendTo($(".legend"));
+		$li.appendTo($("#legend"));
 	}
-	$(".legend").show();
+	$("#legend").show();
 }
 
 
@@ -462,7 +488,7 @@ function makeLangRankTable() {
 	var $headerRow = $("#th_langs");
 	// Make a row of column headings first:
 	for (var lang of Object.keys(user.languageCounts)) {
-		console.log(lang);
+		lang = amendLangNames(lang);
 		$headerRow.append($("<th>").html(lang));
 	}
 	// Make a row for each rank:
@@ -628,6 +654,7 @@ function polyfillsAreLoaded() {
 			console.log("User", cwUserPromise);
 			// Depends on promise resolving:
 			cwUserPromise.then(cwUser => {
+				$("#user-profile").removeClass("loading");
 				// Reload page:
 				console.log(cwUser);
 				if (cwUser && cwUser.username) {
@@ -644,7 +671,7 @@ function polyfillsAreLoaded() {
 			var filter = $(this).data("filter");
 			console.log("Filtering by", filter);
 			clearCalendar();
-			renderKatas(user.completedKatas, filter);
+			renderKatas(user.completedKatas, filter, false);	// don't regenerate canvas pies
 			filterTooltips(filter);
 			// Move selected class:
 			$("#language-filter li").removeClass("selected");
