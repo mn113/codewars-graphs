@@ -302,10 +302,11 @@ function makeFilters() {
 // Show only the <li>s in the tooltips for the filtered language:
 function filterTooltips(filter) {
 	if (filter.length > 0) {
-		$(".tt li").hide().find('.'+filter).show();
+		$(".tt-katas li").hide();
+		$(".tt-katas li."+filter).show();
 	}
 	else {
-		$(".tt li").show();
+		$(".tt-katas li").show();
 	}
 }
 
@@ -438,7 +439,7 @@ function makeTooltipContent(kataids) {
 		$li.html(makeRankPill(rank));
 		// Concatenate lang icons:
 		var $icons = $("<span>");
-		for (var lang of kata.completedLanguages) {
+		for (var lang of _.uniq(kata.completedLanguages)) {
 			// Add multiple language classes to li:
 			$li.addClass(lang);
 			var $icon = $("<i>")
