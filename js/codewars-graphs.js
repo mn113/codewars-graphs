@@ -20,11 +20,14 @@ var langColours = {
 	crystal: "black"
 };
 
+var ranks = ['Beta', '8 kyu', '7 kyu', '6 kyu', '5 kyu', '4 kyu', '3 kyu', '2 kyu', '1 kyu'];
+
 var user = {
 	details: null,
 	completedKatas: [],
 	authoredKatas: [],
-	languageCounts: {}
+	languageCounts: {},
+	submissionTimes: []
 };
 
 
@@ -71,8 +74,8 @@ function getUser(username) {
 }
 
 // Fetch current user's completed katas from CW API in multiple pages:
-function getCompletedKatas(username, page) {
-	if (typeof page === 'undefined') page = 0;
+function getKatas(username, page = 0) {
+	//if (typeof page === 'undefined') page = 0;
 	if (typeof username === 'undefined') return;
 
 	// Retrieve the page of katas only if we don't have it stored:
@@ -81,8 +84,10 @@ function getCompletedKatas(username, page) {
 		var url = baseUrl + "/users/" + username + "/code-challenges/completed?page=" + page;
 		axios.get(url)
 			.then(function(resp) {
+				// Cache page:
 				localStorage.setItem(username+'-page'+page, JSON.stringify(resp.data.data));
 				user.completedKatas = user.completedKatas.concat(resp.data.data);
+
 				handleFetchedKatas(resp.data.data, page, username);
 			});
 	}
@@ -90,6 +95,7 @@ function getCompletedKatas(username, page) {
 		// Local fetch:
 		var localKatas = JSON.parse(localStorage.getItem(username+'-page'+page));
 		user.completedKatas = user.completedKatas.concat(localKatas);
+
 		handleFetchedKatas(localKatas, page, username);
 	}
 }
@@ -120,19 +126,20 @@ function handleFetchedKatas(katas, page, username) {
 		}, 750);
 
 		// Get individual kata details:
-		user.completedKatas.forEach(function(kata) {
+		katas.forEach(function(kata) {
 			getKataDetails(kata.id);
 		});
 
 		makeLegend();
 		makeLangRankTable();
+		mapTimes();
 	}
 	else {
 		// Render latest katas:
 		console.log("Rendering page", page);
 		renderKatas(katas, "", false);
 		// Fetch next page of katas from API:
-		getCompletedKatas(username, page+1);
+		getKatas(username, page+1);
 	}
 }
 
@@ -274,10 +281,21 @@ function renderKatas(katas, filter = "", isFinal = false) {		// ES6 default prop
 	}
 }
 
+// Generate the filter activation links:
 function makeFilters() {
 	for (var lang of Object.keys(user.languageCounts)) {
 		var $li = $("<li>").data('filter', lang).html(lang);
 		$li.appendTo($("#language-filter"));
+	}
+}
+
+// Show only the <li>s in the tooltips for the filtered language:
+function filterTooltips(filter) {
+	if (filter.length > 0) {
+		$(".tt li").hide().find('.'+filter).show();
+	}
+	else {
+		$(".tt li").show();
 	}
 }
 
@@ -388,18 +406,22 @@ function makeTooltipContent(kataids) {
 		var rank = JSON.parse(localStorage.getItem(id)).rank.name;
 		// Build html:
 		var $li = $("<li>");
+		// Show rank pill:
 		$li.html(makeRankPill(rank));
+		// Show lang icon:
+		var lang = kata.completedLanguages[0];
 		// Handle special cases for icon display:
-		if (kata.completedLanguages[0] === 'shell') kata.completedLanguages[0] = 'bash';
-		if (kata.completedLanguages[0] === 'cpp') kata.completedLanguages[0] = 'cplusplus';
+		if (lang === 'shell') lang = 'bash';
+		if (lang === 'cpp') lang = 'cplusplus';
+		$li.addClass(lang);
 		var $icon = $("<i>")
-			.addClass(kata.completedLanguages[0])
-			.addClass("icon-moon-"+kata.completedLanguages[0]);
+			.addClass(lang)
+			.addClass("icon-moon-"+lang);
+		// Add link:
 		var $anchor = $("<a>")
 			.attr("href", "https://www.codewars.com/kata/"+kata.slug)
 			.attr("target", "_blank")
 			.html(kata.name);
-		//$rank.appendTo($li);
 		$icon.appendTo($li);
 		$anchor.appendTo($li);
 		$li.appendTo($ul);
@@ -433,27 +455,6 @@ function makeLegend() {
 
 
 /* LANG-RANKS */
-
-var ranks = ['Beta', '8 kyu', '7 kyu', '6 kyu', '5 kyu', '4 kyu', '3 kyu', '2 kyu', '1 kyu'];
-
-// Import mn113's languages-ranks data from local file:
-/*
-function getLangRankData() {
-	var langRankData = [];
-	// Read from local json file:
-	$.ajax({
-		type: "GET",
-		url: "kata-ranks-langs.json",
-		dataType: "json",
-		success: function(data) {
-			langRankData = data;
-			//console.log(langRankData);
-			makeLangRankTable(data);
-		}
-	});
-	// Draw table:
-}
-*/
 
 // Build out <table> element for all required ranks & languages:
 function makeLangRankTable() {
@@ -508,6 +509,29 @@ function fillLanguageRankTable() {
 }
 
 
+/* TIME MAP */
+
+function mapTimes() {
+	// Set up 7 x 24 data structure:
+	for (var i = 0; i < 7; i++) {
+		user.submissionTimes.push([]);
+		for (var j = 0; j < 24; j++) {
+			user.submissionTimes[i].push(0);
+		}
+	}
+	// Extract the timeslot data from completedKatas list:
+	for (var kata of user.completedKatas) {
+		var day = moment(kata.completedAt).day();
+		var timeslot = moment(kata.completedAt).hour();
+		console.log(kata.completedAt, day, timeslot);
+		user.submissionTimes[day][timeslot] += 1;
+	}
+
+	// Draw a chart:
+	console.log(user.submissionTimes);
+}
+
+
 // MAIN EXECUTION STARTS:
 
 function polyfillsAreLoaded() {
@@ -515,12 +539,8 @@ function polyfillsAreLoaded() {
 	// jQuery has loaded, document too:
 	$(document).ready(function() {
 
-		// Display blank calendar no matter what:
-		generateCalendar("#calendar");
-
-		var urlParams = new URL(location.href).searchParams;	// needs polyfill for IE8-11
-
 		// Set user from URL string on page load:
+		var urlParams = new URL(location.href).searchParams;	// needs polyfill for IE8-11
 		if (urlParams.get('user')) {
 			// Check validity by API request:
 			var cwUserPromise = getUser(urlParams.get('user'));
@@ -533,10 +553,14 @@ function polyfillsAreLoaded() {
 					$("h1 input").val(cwUser.username);
 					$("h1 input").width($("h1 input").val().length * 20);
 					// Start fetching data for calendar:
-					getCompletedKatas(cwUser.username);
+					getKatas(cwUser.username);
+					//getKatas(cwUser.username, 'authored');
 				}
 			});
 		}
+
+		// Display blank calendar no matter what:
+		generateCalendar("#calendar");
 
 		// Reload page on username input:
 		$("h1 form").on("submit", function(e) {
@@ -564,6 +588,7 @@ function polyfillsAreLoaded() {
 			console.log("Filtering by", filter);
 			clearCalendar();
 			renderKatas(user.completedKatas, filter);
+			filterTooltips(filter);
 			// Move selected class:
 			$("#language-filter li").removeClass("selected");
 			$(this).addClass("selected");
