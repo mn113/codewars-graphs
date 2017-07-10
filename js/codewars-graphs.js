@@ -523,12 +523,69 @@ function mapTimes() {
 	for (var kata of user.completedKatas) {
 		var day = moment(kata.completedAt).day();
 		var timeslot = moment(kata.completedAt).hour();
-		console.log(kata.completedAt, day, timeslot);
 		user.submissionTimes[day][timeslot] += 1;
 	}
+	console.log(user.submissionTimes);
+	// Find maximum value:
+	var maxCell = _.max(_.flatten(user.submissionTimes));
 
 	// Draw a chart:
-	console.log(user.submissionTimes);
+	var canvas = $('#submissionTimes').children('canvas')[0],
+		ctx = canvas.getContext('2d'),
+		x = canvas.width / 2,
+		y = canvas.height / 2;
+	ctx.imageSmoothingQuality = 'high';
+	ctx.clearRect(0, 0, canvas.width, canvas.height);
+	ctx.fillStyle = 'teal';
+	ctx.font = '40px sans-serif';
+	ctx.fillText('★', x-20, y+13);
+
+	// Loop days & hours to render cells:
+	for (i = 0; i < 7; i++) {
+		for (j = 0; j < 24; j++) {
+			renderArcBox(i, j, user.submissionTimes[i][j] / maxCell);	// NEED TO NORMALISE OPACITY
+		}
+	}
+
+	// Labels
+	ctx.globalAlpha = 1;
+	ctx.font = '15px sans-serif';
+	ctx.fillText('Sun', 230, 45);
+	ctx.fillText('Sat', 230, 70);
+	ctx.fillText('Fri', 230, 95);
+	ctx.fillText('Thu', 230, 120);
+	ctx.fillText('Wed', 230, 145);
+	ctx.fillText('Tue', 230, 170);
+	ctx.fillText('Mon', 230, 195);
+	// Labels
+	ctx.fillStyle = '#333';
+	ctx.fillText('midnight', 200, 20);
+	ctx.fillText('3am', 370, 80);
+	ctx.fillText('6am', 420, 230);
+	ctx.fillText('9am', 370, 380);
+	ctx.fillText('noon', 210, 445);
+	ctx.fillText('3pm', 55, 380);
+	ctx.fillText('6pm', 0, 230);
+	ctx.fillText('9pm', 55, 80);
+
+
+	function renderArcBox(outset, angle, opacity) {
+		var thickness = 25,
+			innerRadius = 25 + (outset * thickness),
+			startAngle = (angle * Math.PI / 12) - Math.PI / 2,	// North == midnight
+			endAngle = startAngle + Math.PI / 12;
+
+		// Commence drawing arc box:
+		ctx.beginPath();
+		ctx.arc(x, y, innerRadius, startAngle, endAngle, false);			// cw arc
+		ctx.arc(x, y, innerRadius+thickness, endAngle, startAngle, true);	// ccw arc
+		ctx.globalAlpha = opacity;
+		ctx.fill();
+		ctx.globalAlpha = 0.3;
+		ctx.stroke();
+		ctx.closePath();
+	}
+	$('#submissionTimes').show();
 }
 
 
