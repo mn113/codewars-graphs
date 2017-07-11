@@ -42,8 +42,9 @@ var user = {
 // Obtain Codewars API key (locally):
 //var secrets = axios.get("js/secret.json").then(resp => resp.data);
 
-//var baseUrl = "https://www.codewars.com/api/v1/";
-var baseUrl = "http://localhost:5050";
+//var baseUrl = "https://www.codewars.com/api/v1/";		// original API server
+//var baseUrl = "http://localhost:5050";		// dev proxy server
+var baseUrl = "http://35.176.144.168";			// AWS EC2 proxy server
 
 // Fetch user profile from localStorage or CW API:
 function getUser(username) {
