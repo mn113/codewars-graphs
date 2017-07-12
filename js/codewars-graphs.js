@@ -32,6 +32,8 @@ var user = {
 	details: null,
 	completedKatas: [],
 	authoredKatas: [],
+	fetchedKataCount: 0,
+	fetchedKataDetailCount: 0,
 	languageCounts: {},
 	submissionTimes: []
 };
@@ -111,8 +113,9 @@ function getKatas(username, page = 0) {
 // Do stuff with the local- or API-fetched katas:
 function handleFetchedKatas(katas, page, username) {
 	// Always keep progress message up-to-date:
-	var number = (200 * page) + katas.length;
-	$(".message").html(number+" of "+user.details.codeChallenges.totalCompleted+" user katas fetched.");
+	user.fetchedKataCount += katas.length;
+	//var number = (200 * page) + katas.length;
+	$(".message span:first-child").html(user.fetchedKataCount+" of "+user.details.codeChallenges.totalCompleted+" user katas fetched.");
 
 	// Do we have them all?
 	if (katas.length < 200) {
@@ -128,7 +131,7 @@ function handleFetchedKatas(katas, page, username) {
 
 		// Remove blank weeks from calendar start:
 		setTimeout(function() {
-			console.log("Cropping");
+			console.log("Cropping calendar start");
 			cropCalendar();		// I HOPE THEY ARE ALL RENDERED BEFORE CROP...
 		}, 750);
 
@@ -158,11 +161,14 @@ function getKataDetails(id) {
 		var url = baseUrl + "/code-challenges/" + id;
 		return axios.get(url)
 			.then(function(resp) {
-				console.log("Kata response", resp);
+				//console.log("Kata response", resp);
 				// Strip long description:
 				if (resp.data.description) resp.data.description = '';
-				// store id locally:
+				// Store locally using id as key:
 				localStorage.setItem(id, JSON.stringify(resp.data));
+				// Message:
+				user.fetchedKataDetailCount++;
+				$(".message span:last-child").html(user.fetchedKataDetailCount + " kata details fetched.");
 				return resp.data;
 			})
 			.catch(function(err) {
@@ -170,7 +176,7 @@ function getKataDetails(id) {
 				return false;
 			});
 	}
-	else return JSON.parse(localStorage.getItem(id));	// NOT A PROMISE, BUT DOESN'T MATTER
+	else return Promise.resolve(JSON.parse(localStorage.getItem(id)));
 }
 
 
@@ -399,17 +405,6 @@ function drawPieOnCanvas(data, date) {
 
 /* CALENDAR EXTRAS */
 
-// Utility function to fix bad language names:
-/*
-function amendLangNames(lang) {
-	// Handle special cases for icon display:
-	if (lang === 'shell') lang = 'bash';
-	if (lang === 'cpp') lang = 'cplusplus';
-	if (lang === 'c') lang = 'c-lang';
-	return lang;
-}
-*/
-
 // Prepare tooltips for filled calendar days
 function createCalendarTooltips() {
 	Tipped.create('.day', function() {
@@ -428,17 +423,17 @@ function createCalendarTooltips() {
 function makeTooltipContent(kataids) {
 	var $ul = $("<ul>").addClass("tt-katas");
 	for (var id of kataids) {
+		// Start building html:
+		var $li = $("<li>").attr("id", "tt"+id);
+		// Insert fake svg:
+		$li.append(makeRankPill(null));
+
 		// Lookup id in big kata list:
-		var kata = _.find(user.completedKatas, (kata) => kata.id === id);
-		// Lookup id in localStorage to get rank:
-		var rank = JSON.parse(localStorage.getItem(id)).rank.name;
-		// Build html:
-		var $li = $("<li>");
-		// Show rank pill:
-		$li.html(makeRankPill(rank));
+		var basicKata = _.find(user.completedKatas, (kata) => kata.id === id);
+
 		// Concatenate lang icons:
 		var $icons = $("<span>");
-		for (var lang of _.uniq(kata.completedLanguages)) {
+		for (var lang of _.uniq(basicKata.completedLanguages)) {
 			// Add multiple language classes to li:
 			$li.addClass(lang);
 			var $icon = $("<i>")
@@ -448,12 +443,21 @@ function makeTooltipContent(kataids) {
 		}
 		// Add link:
 		var $anchor = $("<a>")
-			.attr("href", "https://www.codewars.com/kata/"+kata.slug)
+			.attr("href", "https://www.codewars.com/kata/"+basicKata.slug)
 			.attr("target", "_blank")
-			.html(kata.name);
+			.html(basicKata.name);
+
+		// Build all together:
 		$icons.appendTo($li);
 		$anchor.appendTo($li);
 		$li.appendTo($ul);
+
+		// Lookup id in localStorage to get real rank:
+		var kataDetails = getKataDetails(id);	// Promise
+		kataDetails.then(kata => {
+			// Replace fake rank pill:
+			$("#tt"+kata.id).children("svg").replaceWith(makeRankPill(kata.rank.name));
+		});
 	}
 	return $ul;
 }
@@ -493,37 +497,65 @@ function makeLangRankTable() {
 	// Make a row for each rank:
 	for (var rank of ranks) {
 		var $tr = $("<tr>").html($("<th>").html(rank));
-		for (var lang of Object.keys(user.languageCounts)) {
+		for (lang of Object.keys(user.languageCounts)) {
 			// Make the empty table cell:
 			$tr.append($("<td>").html('0'));
 		}
 		$("#langRankTable").append($tr);
 	}
-	fillLanguageRankTable();
+	fillLangRankTable();
 }
 
-// Fill <table> with numbers and opacify the cells:
-function fillLanguageRankTable() {
+// Fill <table> with numbers:
+function fillLangRankTable() {
 	console.log("fillLRT", user.languageCounts);
-	for (var kata of user.completedKatas) {
-		var kataDetail = getKataDetails(kata.id);
-		if (!kataDetail) continue;
-		else if (kataDetail.rank && kataDetail.rank.name === null) kataDetail.rank.name = 'Beta';
-		// Boost appropriate table cell:
-		var x = Object.keys(user.languageCounts).indexOf(kata.completedLanguages[0].toLowerCase());	// only consider one lang per kata
-		var y = ranks.indexOf(kataDetail.rank.name);
-		var $td = $("#langRankTable").find("tr:nth-child("+(y+2)+")").find("td:nth-child("+(x+2)+")");
-		// Increment cell's number:
-		$td.html(parseInt($td.html()) + 1);
-	}
+	var filledCells = 0;
+	// Map each basic promise to an object with the details added as a Promise
+	var promises = user.completedKatas.map(kata => {
+		return {
+			basic: kata,
+			detailed: getKataDetails(kata.id)
+		};
+	});
 
+	promises.forEach(kataObject => {
+		//var kataDetailPromise = getKataDetails(kata.id);	// Promise (pending)
+		kataObject.detailed.then(kataDetail => {
+			if (typeof kataDetail.rank === 'undefined') return;	// skip faulty data
+			// null rank => Beta:
+			var rank = (kataDetail.rank.name === null) ? 'Beta' : kataDetail.rank.name;
+			if (typeof rank !== 'undefined') {
+				// Boost appropriate table cell:
+				var x = Object.keys(user.languageCounts).indexOf(kataObject.basic.completedLanguages[0].toLowerCase());	// only consider one lang per kata
+				var y = ranks.indexOf(rank);
+				var $td = $("#langRankTable").find("tr:nth-child("+(y+2)+")").find("td:nth-child("+(x+2)+")");
+				// Increment cell's number:
+				$td.html(parseInt($td.html()) + 1);
+				filledCells++;
+			}
+		})
+		.catch(err => {
+			console.log(kataObject.basic, err);
+		});
+	});
+
+	Promise.all(promises).then(() => {
+		console.log("Added "+filledCells+" async katas to langRankTable");
+		colourLangRankTable();
+	});
+	console.log("Added "+filledCells+" katas to langRankTable");	// ASYNC PROBLEM
+	addSkillsToLangRankTable();
+}
+
+// Colour table cells and vary opacity:
+function colourLangRankTable() {
 	// Find max cell value:
 	var maxValue = _.chain($("#langRankTable td"))
 					.map(td => parseInt($(td).html()))
 					.max()
 					.value();
 
-	console.log(maxValue+" maximum");
+	console.log(maxValue+" maximum cell value");
 
 	// Colour cells using opacity:
 	$("td").each(function() {
@@ -531,6 +563,28 @@ function fillLanguageRankTable() {
 			background: 'rgba(200,0,255,'+ parseInt($(this).html()) / maxValue +')'
 		});
 	});
+}
+
+// Make a final table row containing rank pills:
+function addSkillsToLangRankTable() {
+	var rankedLangs = user.details.ranks.languages;
+	// Make row with row heading:
+	var $tr = $("<tr>").append($("<th>").html("user skill"));
+	// Locate kyu rank for each column heading:
+	$("#th_langs th").each(function(index, th) {
+		if (index > 0) {
+			var langName = $(th).html();
+			// Not all the columns possess an average ranking:
+			if (Object.keys(rankedLangs).indexOf(langName) !== -1) {
+				var rank = rankedLangs[langName].name;
+				$tr.append($("<td>").html(makeRankPill(rank)));
+			}
+			else {
+				$tr.append($("<td>"));
+			}
+		}
+	});
+	$("#langRankTable").append($("<tfoot>").append($tr));
 }
 
 
@@ -623,23 +677,21 @@ function polyfillsAreLoaded() {
 
 		// Set user from URL string on page load:
 		var urlParams = new URL(location.href).searchParams;	// needs polyfill for IE8-11
-		if (urlParams.get('user')) {
-			// Check validity by API request:
-			var cwUserPromise = getUser(urlParams.get('user'));
-			//console.log("User", cwUserPromise);
-			// Depends on promise resolving:
-			cwUserPromise.then(cwUser => {
-				console.log('cwUser', cwUser);
-				// Set title:
-				if (cwUser) {
-					$("h1 input").val(cwUser.username);
-					$("h1 input").width($("h1 input").val().length * 20);
-					// Start fetching data for calendar:
-					getKatas(cwUser.username);
-					//getKatas(cwUser.username, 'authored');
-				}
-			});
-		}
+		var username = urlParams.get('user') || 'mn113';
+		// Check validity by API request:
+		var cwUserPromise = getUser(username);
+		// Depends on promise resolving:
+		cwUserPromise.then(cwUser => {
+			console.log('cwUser', cwUser);
+			// Set title:
+			if (cwUser) {
+				$("h1 input").val(cwUser.username);
+				$("h1 input").width($("h1 input").val().length * 20);
+				// Start fetching data for calendar:
+				getKatas(cwUser.username);
+				//getKatas(cwUser.username, 'authored');
+			}
+		});
 
 		// Display blank calendar no matter what:
 		generateCalendar("#calendar");
@@ -650,7 +702,6 @@ function polyfillsAreLoaded() {
 			e.stopPropagation();
 			// Check validity by API request:
 			var cwUserPromise = getUser($("h1 input").val());
-			console.log("User", cwUserPromise);
 			// Depends on promise resolving:
 			cwUserPromise.then(cwUser => {
 				$("#user-profile").removeClass("loading");

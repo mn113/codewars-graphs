@@ -36,5 +36,5 @@ var server = http.createServer(function(req, res) {
 
 });
 
-console.log("listening on http://localhost:5050");
-server.listen(5050);
+console.log("listening on http://localhost:3001");
+server.listen(3001);

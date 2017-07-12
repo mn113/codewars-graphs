@@ -55,6 +55,7 @@ i[class^="icon-moon-"] {
     font-size: 1em
 }
 
+.icon-moon-go:before,
 .icon-moon-go-lang:before {
     content: "\e91b"
 }

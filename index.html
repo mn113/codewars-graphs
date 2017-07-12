@@ -12,11 +12,11 @@
 	<link rel="stylesheet" href="https://cdn.jsdelivr.net/tipped/4.0.10/css/tipped/tipped.css">
 	<link rel="shortcut icon" href="img/favicon.png">
 
-	<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+	<!--svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
 		<symbol id="kyu" viewBox="0 0 67 32">
 			<path d="M0,15 L15,0 L50,0 L65,15 L50,30 L15,30 L0,15 Z" stroke="current-color" stroke-width="2" fill="none"/>
 		</symbol>
-	</svg>
+	</svg-->
 </head>
 <body>
 	<header>
@@ -25,7 +25,7 @@
 				<input type="text" id="username" value=""><button>Update</button>
 			</form>
 		</h1>
-		<div class="message"></div>
+		<div class="message"><span></span> <span></span></div>
 	</header>
 
 	<main>
@@ -40,15 +40,17 @@
 		<section id="langRanks">
 			<h2>Completed katas by language/rank</h2>
 			<table id="langRankTable">
-				<tr id="th_langs">
-					<th>&times;</th>
-					<!-- generate more th's based on languages used -->
-				</tr>
+				<thead>
+					<tr id="th_langs">
+						<th>&times;</th>
+						<!-- generate more th's based on languages used -->
+					</tr>
+				</thead>
 			</table>
 		</section>
 
 		<section id="submissionTimes" style="display: none;">
-			<h2>Kata completion times</h2>
+			<h2>Kata completion times <span>(UTC, not adjusted as user's timezone unknown)</span></h2>
 			<canvas width="450" height="450"></canvas>
 		</section>
 	</main>

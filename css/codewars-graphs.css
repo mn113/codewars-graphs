@@ -57,6 +57,10 @@ h1 form {
 h1 input.invalid {
 	border: 1px solid red;
 }
+h2 span {
+	font-size: 0.9rem;
+	font-weight: normal;
+}
 
 
 /***********/
@@ -328,6 +332,14 @@ svg.pill {
 }
 
 
+/************/
+/* TOOLTIPS */
+/************/
+.tpd-tooltip li {
+	line-height: 16px;
+}
+
+
 /*********/
 /* TABLE */
 /*********/
@@ -342,6 +354,9 @@ svg.pill {
 th, td {
 	border: 1px dotted #333;
 	text-align: center;
+}
+tfoot td {
+	padding-top: 0.7em;
 }
 
 
