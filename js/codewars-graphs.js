@@ -32,10 +32,13 @@ var user = {
 	details: null,
 	completedKatas: [],
 	authoredKatas: [],
-	fetchedKataCount: 0,
-	fetchedKataDetailCount: 0,
 	languageCounts: {},
-	submissionTimes: []
+	submissionTimes: [],
+	fetchCounts: {
+		katas: 0,
+		ApiKataDetails: 0,
+		localKataDetails: 0
+	}
 };
 
 
@@ -112,9 +115,9 @@ function getKatas(username, page = 0) {
 // Do stuff with the local- or API-fetched katas:
 function handleFetchedKatas(katas, page, username) {
 	// Always keep progress message up-to-date:
-	user.fetchedKataCount += katas.length;
+	user.fetchCounts.katas += katas.length;
 	//var number = (200 * page) + katas.length;
-	$(".message span:first-child").html(user.fetchedKataCount+" of "+user.details.codeChallenges.totalCompleted+" user katas fetched.");
+	$(".message span:first-child").html(user.fetchCounts.katas+" of "+user.details.codeChallenges.totalCompleted+" user katas fetched.");
 
 	// Do we have them all?
 	if (katas.length < 200) {
@@ -166,8 +169,8 @@ function getKataDetails(id) {
 				// Store locally using id as key:
 				localStorage.setItem(id, JSON.stringify(resp.data));
 				// Message:
-				user.fetchedKataDetailCount++;
-				$(".message span:last-child").html(user.fetchedKataDetailCount + " kata details fetched.");
+				user.fetchCounts.ApiKataDetails++;
+				$(".message span:nth-child(2)").html(user.fetchCounts.ApiKataDetails + " kata details fetched.");
 				return resp.data;
 			})
 			.catch(function(err) {
@@ -175,7 +178,11 @@ function getKataDetails(id) {
 				return false;
 			});
 	}
-	else return Promise.resolve(JSON.parse(localStorage.getItem(id)));
+	else {
+		user.fetchCounts.localKataDetails++;
+		$(".message span:last-child").html(user.fetchCounts.localKataDetails + " locally-stored details known.");
+		return Promise.resolve(JSON.parse(localStorage.getItem(id)));
+	}
 }
 
 
