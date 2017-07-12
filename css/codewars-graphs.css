@@ -56,6 +56,7 @@ h1 form {
 }
 h1 input.invalid {
 	border: 1px solid red;
+	color: red;
 }
 h2 span {
 	font-size: 0.9rem;

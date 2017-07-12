@@ -45,9 +45,8 @@ var user = {
 //var secrets = axios.get("js/secret.json").then(resp => resp.data);
 
 //var baseUrl = "https://www.codewars.com/api/v1/";	// original API server
-//var baseUrl = "http://localhost:5050";		// dev proxy server
-//var baseUrl = "http://35.176.144.168";		// AWS EC2 proxy server
-var baseUrl = "https://cwapi.marthost.uk";		// live proxy server
+//var baseUrl = "http://localhost:5050";			// dev proxy server
+var baseUrl = "https://cwapi.marthost.uk";			// live proxy server
 
 // Fetch user profile from localStorage or CW API:
 function getUser(username) {
@@ -708,11 +707,15 @@ function polyfillsAreLoaded() {
 				// Reload page:
 				console.log(cwUser);
 				if (cwUser && cwUser.username) {
-					window.location.href = window.location.origin + window.location.pathname + '?user=' + cwUser.username;
+					window.location.href = '?user=' + cwUser.username;
 				}
 				else {
 					$("h1 input").addClass("invalid");
 				}
+			})
+			.catch(err => {
+				console.log("Couldn't load specified user.", err);
+				$("h1 input").addClass("invalid");
 			});
 		});
 
